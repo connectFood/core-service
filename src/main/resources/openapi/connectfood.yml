@@ -1,0 +1,423 @@
+openapi: 3.0.4
+info:
+  title: Restaurant Management System - ConnectFood
+  description: |-
+    API for user management (customers and restaurant owners) and login validation.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Development environment
+tags:
+  - name: Users
+    description: Operations related to system users.
+  - name: Authentication
+    description: Operations related to the validation of access credentials.
+
+paths:
+  /api/v1/users:
+    post:
+      tags: [Users]
+      summary: Register user.
+      description: Creates a new user, ensuring email uniqueness and storing the password with a secure hash.
+      operationId: createUser
+      requestBody:
+        description: Mandatory data for user creation.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '201':
+          description: User created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid input data.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+          description: Email already registered in the system.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+    get:
+      tags: [Users]
+      summary: List and search users.
+      description: Returns the list of users with support for filter by name (contains, case-insensitive) and roles (CUSTOMER/OWNER).
+      operationId: listUsers
+      parameters:
+        - name: name
+          in: query
+          description: Partial filter by user name (contains, case-insensitive).
+          required: false
+          schema:
+            type: string
+        - name: role
+          in: query
+          description: Filter by a specific user role.
+          required: false
+          schema:
+            $ref: '#/components/schemas/UserRole'
+      responses:
+        '200':
+          description: User list returned successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid filter parameter.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/users/{uuid}:
+    get:
+      tags: [Users]
+      summary: Get user by UUID.
+      description: Returns data for an existing user by its identifier.
+      operationId: getUserByUuid
+      parameters:
+        - name: uuid
+          in: path
+          description: Unique user identifier.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: User not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+    put:
+      tags: [Users]
+      summary: Update user data.
+      description: Updates user registration data (password not changed in this endpoint).
+      operationId: updateUser
+      parameters:
+        - name: uuid
+          in: path
+          description: Unique user identifier.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Fields allowed to be updated (e.g., name, email, login, roles and addresses).
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: User data updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid input data.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+          description: Email already exists.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: User not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/users/{uuid}/password:
+    patch:
+      tags: [Users]
+      summary: Change user password.
+      description: Changes the user's password after validating the current password provided.
+      operationId: changePassword
+      parameters:
+        - name: uuid
+          in: path
+          description: Unique user identifier.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Current password and new password to complete the change.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '204':
+          description: Password changed successfully.
+        '401':
+          description: Current password is incorrect.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: User not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Validate access credentials.
+      description: Checks whether the login or email and password correspond to a valid user; does not issue a token at this stage.
+      operationId: login
+      requestBody:
+        description: Credentials for validation (login or email and password).
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginValidationRequest'
+      responses:
+        '200':
+          description: Valid credentials; returns summary user information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginValidationResponse'
+        '401':
+          description: Invalid credentials.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    UserRole:
+      type: string
+      description: Role that the user plays in the system.
+      enum: [CUSTOMER, OWNER]
+
+    AddressResponse:
+      type: object
+      description: Address linked to the user.
+      properties:
+        uuid:
+          type: string
+          description: Stable public identifier of the address.
+        street:
+          type: string
+        number:
+          type: string
+        complement:
+          type: string
+        neighborhood:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+          description: Brazilian postal code (CEP).
+        country:
+          type: string
+        addressType:
+          type: string
+          description: Human-readable address type (e.g., HOME, WORK).
+        isDefault:
+          type: boolean
+          description: Indicates whether this address is the default one.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AddressUpsertRequest:
+      type: object
+      description: Address payload for create/update operations.
+      properties:
+        uuid:
+          type: string
+          description: When present, updates the existing address; otherwise, creates a new one.
+        street:
+          type: string
+        number:
+          type: string
+        complement:
+          type: string
+        neighborhood:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        country:
+          type: string
+        addressType:
+          type: string
+        isDefault:
+          type: boolean
+
+    UserResponse:
+      type: object
+      description: Public representation of the user returned by query and update endpoints.
+      properties:
+        uuid:
+          type: string
+          description: Stable public identifier of the user.
+        fullName:
+          type: string
+        email:
+          type: string
+        login:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+          description: One or more roles assigned to the user.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressResponse'
+
+    UserCreateRequest:
+      type: object
+      description: Data structure required to create a new user.
+      required: [fullName, email, login, password, roles, addresses]
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        login:
+          type: string
+        password:
+          type: string
+          description: Plain text (stored as hash).
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+          minItems: 1
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressUpsertRequest'
+          minItems: 1
+
+    UserUpdateRequest:
+      type: object
+      description: Data structure allowed for updating user registration (except password).
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        login:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+        addresses:
+          type: array
+          description: Full upsert list; provide desired final state (create/update/remove by omission).
+          items:
+            $ref: '#/components/schemas/AddressUpsertRequest'
+
+    ChangePasswordRequest:
+      type: object
+      description: Payload to change user's password.
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+
+    LoginValidationRequest:
+      type: object
+      description: Data structure for validating access credentials.
+      required: [login, password]
+      properties:
+        login:
+          type: string
+          description: User's login or registered email address.
+        password:
+          type: string
+
+    LoginValidationResponse:
+      type: object
+      description: Successful response when validating credentials, with summarized user data.
+      properties:
+        valid:
+          type: boolean
+        userUuid:
+          type: string
+          description: User's public identifier.
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+
+    ProblemDetails:
+      type: object
+      description: Standardized error structure according to Problem Details (RFC 7807).
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
