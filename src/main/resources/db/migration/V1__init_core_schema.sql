@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS core.users (
   full_name     VARCHAR(255) NOT NULL,
   email         CITEXT       NOT NULL,
   login         CITEXT       NOT NULL,
+  password      VARCHAR(255) NOT NULL,
   roles         JSONB        NOT NULL DEFAULT '[]'::jsonb,
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),

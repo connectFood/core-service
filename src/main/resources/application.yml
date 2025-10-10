@@ -10,10 +10,8 @@ spring:
       fail-on-empty-beans: false
   datasource:
     url: jdbc:postgresql://localhost:5432/connectfood
-    username: root
-    password: root
-  #    username: connect
-#    password: food
+    username: connect
+    password: food
   jpa:
     hibernate:
       ddl-auto: none
