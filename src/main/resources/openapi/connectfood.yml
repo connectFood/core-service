@@ -5,7 +5,7 @@ info:
     API for user management (customers and restaurant owners) and login validation.
   version: 1.0.0
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:9090
     description: Development environment
 tags:
   - name: Users
@@ -14,7 +14,7 @@ tags:
     description: Operations related to the validation of access credentials.
 
 paths:
-  /api/v1/users:
+  /v1/users:
     post:
       tags: [Users]
       summary: Register user.
@@ -81,7 +81,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
-  /api/v1/users/{uuid}:
+  /v1/users/{uuid}:
     get:
       tags: [Users]
       summary: Get user by UUID.
@@ -94,6 +94,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       responses:
         '200':
           description: User found.
@@ -120,6 +121,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       requestBody:
         description: Fields allowed to be updated (e.g., name, email, login, roles and addresses).
         required: true
@@ -153,7 +155,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
-  /api/v1/users/{uuid}/password:
+  /v1/users/{uuid}/password:
     patch:
       tags: [Users]
       summary: Change user password.
@@ -166,6 +168,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       requestBody:
         description: Current password and new password to complete the change.
         required: true
@@ -189,7 +192,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
-  /api/v1/auth/login:
+  /v1/auth/login:
     post:
       tags: [Authentication]
       summary: Validate access credentials.
@@ -229,26 +232,36 @@ components:
       properties:
         uuid:
           type: string
+          format: uuid
           description: Stable public identifier of the address.
         street:
           type: string
+          maxLength: 140
         number:
           type: string
+          maxLength: 20
         complement:
           type: string
+          maxLength: 80
         neighborhood:
           type: string
+          maxLength: 80
         city:
           type: string
+          maxLength: 80
         state:
           type: string
+          maxLength: 2
         zipCode:
           type: string
+          maxLength: 12
           description: Brazilian postal code (CEP).
         country:
           type: string
+          maxLength: 60
         addressType:
           type: string
+          maxLength: 20
           description: Human-readable address type (e.g., HOME, WORK).
         isDefault:
           type: boolean
@@ -264,9 +277,6 @@ components:
       type: object
       description: Address payload for create/update operations.
       properties:
-        uuid:
-          type: string
-          description: When present, updates the existing address; otherwise, creates a new one.
         street:
           type: string
         number:
@@ -294,13 +304,19 @@ components:
       properties:
         uuid:
           type: string
+          format: uuid
           description: Stable public identifier of the user.
         fullName:
           type: string
+          minLength: 3
+          maxLength: 120
         email:
           type: string
+          format: email
+          maxLength: 255
         login:
           type: string
+          maxLength: 60
         roles:
           type: array
           items:
@@ -324,12 +340,18 @@ components:
       properties:
         fullName:
           type: string
+          minLength: 3
+          maxLength: 120
         email:
           type: string
+          format: email
+          maxLength: 255
         login:
           type: string
+          maxLength: 60
         password:
           type: string
+          minLength: 6
           description: Plain text (stored as hash).
         roles:
           type: array
@@ -350,6 +372,7 @@ components:
           type: string
         email:
           type: string
+          format: email
         login:
           type: string
         roles:
@@ -369,8 +392,10 @@ components:
       properties:
         currentPassword:
           type: string
+          minLength: 6
         newPassword:
           type: string
+          minLength: 6
 
     LoginValidationRequest:
       type: object
@@ -391,6 +416,7 @@ components:
           type: boolean
         userUuid:
           type: string
+          format: uuid
           description: User's public identifier.
         roles:
           type: array

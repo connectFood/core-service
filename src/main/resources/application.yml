@@ -4,14 +4,15 @@ server:
 spring:
   application:
     name: core-service
+    version: 1.0.0
   jackson:
     time-zone: America/Sao_Paulo
     serialization:
       fail-on-empty-beans: false
   datasource:
     url: jdbc:postgresql://localhost:5432/connectfood
-    username: connect
-    password: food
+    username: root
+    password: root
   jpa:
     hibernate:
       ddl-auto: none
@@ -30,3 +31,9 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
