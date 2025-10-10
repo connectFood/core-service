@@ -20,5 +20,5 @@ public abstract class BaseModel {
   private String uuid;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
-  private Integer version;
+  private Long version;
 }

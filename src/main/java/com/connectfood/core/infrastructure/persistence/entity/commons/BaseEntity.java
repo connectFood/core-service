@@ -39,7 +39,7 @@ public abstract class BaseEntity {
   @Column(name = "updated_at", nullable = false,
       columnDefinition = "timestamp default current_timestamp",
       insertable = false, updatable = false)
-  private String updatedAt;
+  private LocalDateTime updatedAt;
 
   @Version
   @Column(nullable = false)
