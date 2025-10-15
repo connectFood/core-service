@@ -94,7 +94,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: User found.
@@ -121,7 +120,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         description: Fields allowed to be updated (e.g., name, email, login, roles and addresses).
         required: true
@@ -168,7 +166,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         description: Current password and new password to complete the change.
         required: true
@@ -232,7 +229,6 @@ components:
       properties:
         uuid:
           type: string
-          format: uuid
           description: Stable public identifier of the address.
         street:
           type: string
@@ -269,9 +265,11 @@ components:
         createdAt:
           type: string
           format: date-time
-        updatedAt:
+          description: LocalDateTime (no timezone).
+        lastUpdateAt:
           type: string
           format: date-time
+          description: LocalDateTime (no timezone).
 
     AddressUpsertRequest:
       type: object
@@ -304,7 +302,6 @@ components:
       properties:
         uuid:
           type: string
-          format: uuid
           description: Stable public identifier of the user.
         fullName:
           type: string
@@ -319,15 +316,17 @@ components:
           maxLength: 60
         roles:
           type: array
+          description: List of roles (each item should be CUSTOMER or OWNER).
           items:
-            $ref: '#/components/schemas/UserRole'
-          description: One or more roles assigned to the user.
+            type: string
         createdAt:
           type: string
           format: date-time
-        updatedAt:
+          description: LocalDateTime (no timezone).
+        lastUpdateAt:
           type: string
           format: date-time
+          description: LocalDateTime (no timezone).
         addresses:
           type: array
           items:
@@ -355,14 +354,15 @@ components:
           description: Plain text (stored as hash).
         roles:
           type: array
-          items:
-            $ref: '#/components/schemas/UserRole'
           minItems: 1
+          description: List of roles (each item should be CUSTOMER or OWNER).
+          items:
+            type: string
         addresses:
           type: array
+          minItems: 1
           items:
             $ref: '#/components/schemas/AddressUpsertRequest'
-          minItems: 1
 
     UserUpdateRequest:
       type: object
@@ -377,8 +377,9 @@ components:
           type: string
         roles:
           type: array
+          description: List of roles (each item should be CUSTOMER or OWNER).
           items:
-            $ref: '#/components/schemas/UserRole'
+            type: string
         addresses:
           type: array
           description: Full upsert list; provide desired final state (create/update/remove by omission).
@@ -416,12 +417,12 @@ components:
           type: boolean
         userUuid:
           type: string
-          format: uuid
           description: User's public identifier.
         roles:
           type: array
+          description: List of roles (each item should be CUSTOMER or OWNER).
           items:
-            $ref: '#/components/schemas/UserRole'
+            type: string
 
     ProblemDetails:
       type: object
