@@ -18,6 +18,6 @@ public class CreateUserUseCase {
 
   public UserResponse execute(UserCreateRequest request) {
     final var user = service.created(mapper.create(request));
-    return mapper.toRsponse(user);
+    return mapper.toResponse(user);
   }
 }

@@ -1,15 +1,14 @@
 package com.connectfood.core.entrypoint.rest.controller;
 
-import java.util.List;
-
 import com.connectfood.api.UsersApi;
 import com.connectfood.core.application.usercase.users.CreateUserUseCase;
 import com.connectfood.core.application.usercase.users.GetUserUseCase;
 import com.connectfood.core.application.usercase.users.ListUsersUseCase;
 import com.connectfood.core.application.usercase.users.UpdateUserUseCase;
+import com.connectfood.model.BaseResponseOfUserResponse;
 import com.connectfood.model.ChangePasswordRequest;
+import com.connectfood.model.PageResponseOfUserResponse;
 import com.connectfood.model.UserCreateRequest;
-import com.connectfood.model.UserResponse;
 import com.connectfood.model.UserRole;
 import com.connectfood.model.UserUpdateRequest;
 
@@ -32,28 +31,33 @@ public class UsersController implements UsersApi {
   private final UpdateUserUseCase updateUserUseCase;
 
   @Override
-  public ResponseEntity<UserResponse> createUser(@Valid UserCreateRequest request) {
+  public ResponseEntity<BaseResponseOfUserResponse> createUser(@Valid UserCreateRequest request) {
     final var result = createUserUseCase.execute(request);
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(result);
+        .body(new BaseResponseOfUserResponse());
   }
 
   @Override
-  public ResponseEntity<List<UserResponse>> listUsers(String name, UserRole role) {
-    final var result = listUsersUseCase.execute(name, role);
-    return ResponseEntity.ok(result);
+  public ResponseEntity<PageResponseOfUserResponse> listUsers(String name, UserRole role, Integer page, Integer size) {
+    final var result = listUsersUseCase.execute(name, role, page, size);
+    return ResponseEntity.ok(new PageResponseOfUserResponse());
   }
 
   @Override
-  public ResponseEntity<UserResponse> getUserByUuid(String uuid) {
+  public ResponseEntity<BaseResponseOfUserResponse> getUserByUuid(String uuid) {
     final var result = getUserUseCase.execute(uuid);
     return ResponseEntity.ok(result);
   }
 
   @Override
-  public ResponseEntity<UserResponse> updateUser(String uuid, @Valid UserUpdateRequest request) {
+  public ResponseEntity<BaseResponseOfUserResponse> updateUser(String uuid, @Valid UserUpdateRequest request) {
     final var result = updateUserUseCase.execute(uuid, request);
-    return ResponseEntity.ok(new UserResponse());
+    return ResponseEntity.ok(new BaseResponseOfUserResponse());
+  }
+
+  @Override
+  public ResponseEntity<Void> deleteUser(String uuid) {
+    return UsersApi.super.deleteUser(uuid);
   }
 
   @Override

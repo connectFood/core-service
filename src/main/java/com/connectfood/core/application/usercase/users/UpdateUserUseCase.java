@@ -22,6 +22,6 @@ public class UpdateUserUseCase {
         .orElseThrow(() -> new NotFoundException("User not found"));
     final var result = service.updated(mapper.update(request, user));
 
-    return mapper.toRsponse(result);
+    return mapper.toResponse(result);
   }
 }

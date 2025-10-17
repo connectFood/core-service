@@ -4,14 +4,19 @@ info:
   description: |-
     API for user management (customers and restaurant owners) and login validation.
   version: 1.0.0
+
 servers:
   - url: http://localhost:9090
     description: Development environment
+
 tags:
   - name: Users
     description: Operations related to system users.
   - name: Authentication
     description: Operations related to the validation of access credentials.
+
+security:
+  - bearerAuth: []
 
 paths:
   /v1/users:
@@ -20,6 +25,7 @@ paths:
       summary: Register user.
       description: Creates a new user, ensuring email uniqueness and storing the password with a secure hash.
       operationId: createUser
+      security: [{ bearerAuth: [] }]
       requestBody:
         description: Mandatory data for user creation.
         required: true
@@ -33,7 +39,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/BaseResponseOfUserResponse'
         '400':
           description: Invalid input data.
           content:
@@ -50,8 +56,9 @@ paths:
     get:
       tags: [Users]
       summary: List and search users.
-      description: Returns the list of users with support for filter by name (contains, case-insensitive) and roles (CUSTOMER/OWNER).
+      description: Returns a paginated user list with optional filters by name (contains, case-insensitive) and role (CUSTOMER/OWNER).
       operationId: listUsers
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: name
           in: query
@@ -65,15 +72,27 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/UserRole'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
       responses:
         '200':
           description: User list returned successfully.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/PageResponseOfUserResponse'
         '400':
           description: Invalid filter parameter.
           content:
@@ -87,6 +106,7 @@ paths:
       summary: Get user by UUID.
       description: Returns data for an existing user by its identifier.
       operationId: getUserByUuid
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: uuid
           in: path
@@ -100,7 +120,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/BaseResponseOfUserResponse'
         '404':
           description: User not found.
           content:
@@ -113,6 +133,7 @@ paths:
       summary: Update user data.
       description: Updates user registration data (password not changed in this endpoint).
       operationId: updateUser
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: uuid
           in: path
@@ -133,7 +154,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/BaseResponseOfUserResponse'
         '400':
           description: Invalid input data.
           content:
@@ -153,12 +174,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
+    delete:
+      tags: [Users]
+      summary: Delete user.
+      description: Permanently removes a user by its UUID.
+      operationId: deleteUser
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: uuid
+          in: path
+          description: Unique user identifier.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User deleted successfully. No content is returned.
+        '404':
+          description: User not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+          description: Deletion not allowed due to existing constraints (e.g., linked resources).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
   /v1/users/{uuid}/password:
     patch:
       tags: [Users]
       summary: Change user password.
       description: Changes the user's password after validating the current password provided.
       operationId: changePassword
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: uuid
           in: path
@@ -192,11 +243,13 @@ paths:
   /v1/auth/login:
     post:
       tags: [Authentication]
-      summary: Validate access credentials.
-      description: Checks whether the login or email and password correspond to a valid user; does not issue a token at this stage.
+      summary: Validate access credentials and return JWT token.
+      description: Validates user credentials (email or login + password) and issues a JWT token upon success.
       operationId: login
+      # endpoint público
+      security: []
       requestBody:
-        description: Credentials for validation (login or email and password).
+        description: Credentials for authentication (login or email and password).
         required: true
         content:
           application/json:
@@ -204,11 +257,11 @@ paths:
               $ref: '#/components/schemas/LoginValidationRequest'
       responses:
         '200':
-          description: Valid credentials; returns summary user information.
+          description: Valid credentials; returns JWT token.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginValidationResponse'
+                $ref: '#/components/schemas/BaseResponseOfJwtTokenResponse'
         '401':
           description: Invalid credentials.
           content:
@@ -217,6 +270,12 @@ paths:
                 $ref: '#/components/schemas/ProblemDetails'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     UserRole:
       type: string
@@ -409,20 +468,20 @@ components:
         password:
           type: string
 
-    LoginValidationResponse:
+    JwtTokenResponse:
       type: object
-      description: Successful response when validating credentials, with summarized user data.
+      description: Response containing the JWT access token and optional expiration time.
       properties:
-        valid:
-          type: boolean
-        userUuid:
+        accessToken:
           type: string
-          description: User's public identifier.
-        roles:
-          type: array
-          description: List of roles (each item should be CUSTOMER or OWNER).
-          items:
-            type: string
+          description: Signed JWT token used for authenticated requests.
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          format: int64
+          description: Token expiration time in seconds.
 
     ProblemDetails:
       type: object
@@ -448,3 +507,39 @@ components:
                 type: string
               message:
                 type: string
+
+    BaseResponseOfUserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: true
+        content:
+          $ref: '#/components/schemas/UserResponse'
+
+    BaseResponseOfJwtTokenResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: true
+        content:
+          $ref: '#/components/schemas/JwtTokenResponse'
+
+    PageResponseOfUserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: true
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+        totalElements:
+          type: integer
+          format: int64
+        page:
+          type: integer
+        size:
+          type: integer

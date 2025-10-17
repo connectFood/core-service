@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UsersMapper {
 
-  public UserResponse toRsponse(Users user) {
+  public UserResponse toResponse(Users user) {
 
     UserResponse response = new UserResponse();
     response.setUuid(user.getUuid());
@@ -32,7 +32,7 @@ public class UsersMapper {
 
   public List<UserResponse> toResponses(List<Users> users) {
     return users.stream()
-        .map(this::toRsponse)
+        .map(this::toResponse)
         .toList();
   }
 
