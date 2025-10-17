@@ -2,6 +2,7 @@ package com.connectfood.core.infrastructure.persistence.adapter;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.connectfood.core.domain.model.Users;
 import com.connectfood.core.domain.repository.UsersRepository;
@@ -30,7 +31,7 @@ public class UsersRepositoryImpl implements UsersRepository {
 
   @Override
   public Optional<Users> findByUuid(String uuid) {
-    final var entity = repository.findByUuid(uuid);
+    final var entity = repository.findByUuid(UUID.fromString(uuid));
 
     return entity.map(mapper::toDomain);
   }
@@ -43,6 +44,6 @@ public class UsersRepositoryImpl implements UsersRepository {
 
   @Override
   public void deleteByUuid(String uuid) {
-    repository.deleteByUuid(uuid);
+    repository.deleteByUuid(UUID.fromString(uuid));
   }
 }

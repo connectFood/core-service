@@ -29,7 +29,7 @@ public abstract class BaseEntity {
 
   @Column(nullable = false, unique = true, updatable = false,
       columnDefinition = "uuid default gen_random_uuid()")
-  private String uuid;
+  private UUID uuid;
 
   @Column(name = "created_at", nullable = false,
       columnDefinition = "timestamp default current_timestamp",
@@ -47,7 +47,6 @@ public abstract class BaseEntity {
 
   @PrePersist
   public void prePersist() {
-    this.uuid = UUID.randomUUID()
-        .toString();
+    this.uuid = UUID.randomUUID();
   }
 }

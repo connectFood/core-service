@@ -11,7 +11,7 @@ public class UsersInfrastructureMapper {
   public Users toDomain(UsersEntity entity) {
     return Users.builder()
         .id(entity.getId())
-        .uuid(entity.getUuid())
+        .uuid(entity.getUuid().toString())
         .fullName(entity.getFullName())
         .email(entity.getEmail())
         .login(entity.getLogin())

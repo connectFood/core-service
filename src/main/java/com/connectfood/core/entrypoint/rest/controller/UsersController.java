@@ -4,6 +4,9 @@ import java.util.List;
 
 import com.connectfood.api.UsersApi;
 import com.connectfood.core.application.usercase.users.CreateUserUseCase;
+import com.connectfood.core.application.usercase.users.GetUserUseCase;
+import com.connectfood.core.application.usercase.users.ListUsersUseCase;
+import com.connectfood.core.application.usercase.users.UpdateUserUseCase;
 import com.connectfood.model.ChangePasswordRequest;
 import com.connectfood.model.UserCreateRequest;
 import com.connectfood.model.UserResponse;
@@ -24,10 +27,12 @@ import lombok.RequiredArgsConstructor;
 public class UsersController implements UsersApi {
 
   private final CreateUserUseCase createUserUseCase;
+  private final ListUsersUseCase listUsersUseCase;
+  private final GetUserUseCase getUserUseCase;
+  private final UpdateUserUseCase updateUserUseCase;
 
   @Override
   public ResponseEntity<UserResponse> createUser(@Valid UserCreateRequest request) {
-
     final var result = createUserUseCase.execute(request);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(result);
@@ -35,16 +40,19 @@ public class UsersController implements UsersApi {
 
   @Override
   public ResponseEntity<List<UserResponse>> listUsers(String name, UserRole role) {
-    return ResponseEntity.ok(List.of());
+    final var result = listUsersUseCase.execute(name, role);
+    return ResponseEntity.ok(result);
   }
 
   @Override
   public ResponseEntity<UserResponse> getUserByUuid(String uuid) {
-    return ResponseEntity.ok(new UserResponse());
+    final var result = getUserUseCase.execute(uuid);
+    return ResponseEntity.ok(result);
   }
 
   @Override
-  public ResponseEntity<UserResponse> updateUser(String uuid, @Valid UserUpdateRequest body) {
+  public ResponseEntity<UserResponse> updateUser(String uuid, @Valid UserUpdateRequest request) {
+    final var result = updateUserUseCase.execute(uuid, request);
     return ResponseEntity.ok(new UserResponse());
   }
 
