@@ -40,7 +40,7 @@ public class UsersController implements UsersApi {
   @Override
   public ResponseEntity<PageResponseOfUserResponse> listUsers(String name, UserRole role, Integer page, Integer size) {
     final var result = listUsersUseCase.execute(name, role, page, size);
-    return ResponseEntity.ok(new PageResponseOfUserResponse());
+    return ResponseEntity.ok(result);
   }
 
   @Override

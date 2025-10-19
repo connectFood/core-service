@@ -55,12 +55,12 @@ public class GlobalExceptionHandler {
         "Validation failed", HttpStatus.BAD_REQUEST, request.getRequestURI(), errors);
   }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ProblemDetails> handleGeneric(
-      final Exception exception, final HttpServletRequest request) {
-    return buildApiErrorResponse(
-        "Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
-  }
+//  @ExceptionHandler(Exception.class)
+//  public ResponseEntity<ProblemDetails> handleGeneric(
+//      final Exception exception, final HttpServletRequest request) {
+//    return buildApiErrorResponse(
+//        "Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+//  }
 
   private ResponseEntity<ProblemDetails> buildApiErrorResponse(
       final String message, final HttpStatus status, final String path) {

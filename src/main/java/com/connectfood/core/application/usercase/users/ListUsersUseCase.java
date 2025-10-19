@@ -1,10 +1,8 @@
 package com.connectfood.core.application.usercase.users;
 
-import java.util.List;
-
 import com.connectfood.core.application.mapper.UsersMapper;
 import com.connectfood.core.domain.service.UsersService;
-import com.connectfood.model.UserResponse;
+import com.connectfood.model.PageResponseOfUserResponse;
 import com.connectfood.model.UserRole;
 
 import org.springframework.stereotype.Component;
@@ -18,8 +16,14 @@ public class ListUsersUseCase {
   private final UsersService service;
   private final UsersMapper mapper;
 
-  public List<UserResponse> execute(String name, UserRole role, Integer page, Integer size) {
-    final var users = service.findAll();
-    return mapper.toResponses(users);
+  public PageResponseOfUserResponse execute(String name, UserRole role, Integer page, Integer size) {
+    final var users = service.findAll(name, role, page, size);
+
+    final var response = mapper.toResponses(users.content());
+
+    return new PageResponseOfUserResponse().content(response)
+        .totalElements(users.totalElements())
+        .page(page)
+        .size(size);
   }
 }

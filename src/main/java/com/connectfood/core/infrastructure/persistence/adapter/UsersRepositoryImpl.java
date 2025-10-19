@@ -5,10 +5,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.connectfood.core.domain.model.Users;
+import com.connectfood.core.domain.model.commons.PageModel;
 import com.connectfood.core.domain.repository.UsersRepository;
 import com.connectfood.core.infrastructure.persistence.jpa.JpaUsersRepository;
 import com.connectfood.core.infrastructure.persistence.mapper.UsersInfrastructureMapper;
+import com.connectfood.model.UserRole;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import lombok.AllArgsConstructor;
@@ -21,12 +24,16 @@ public class UsersRepositoryImpl implements UsersRepository {
   private final UsersInfrastructureMapper mapper;
 
   @Override
-  public List<Users> findAll() {
-    final var entities = repository.findAll();
+  public PageModel<List<Users>> findAll(String name, UserRole role, Integer page, Integer size) {
+    final var pageable = PageRequest.of(page, size);
 
-    return entities.stream()
+    final var entities = repository.findAll(pageable);
+
+    final var result = entities.stream()
         .map(mapper::toDomain)
         .toList();
+
+    return new PageModel<>(result, entities.getTotalElements());
   }
 
   @Override
