@@ -1,5 +1,5 @@
 server:
-  port: 9090
+  port: ${SERVER_PORT:9090}
 
 spring:
   application:
@@ -9,35 +9,33 @@ spring:
     time-zone: America/Sao_Paulo
     serialization:
       fail-on-empty-beans: false
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/connectfood
-    username: root
-    password: root
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:connectfood}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USER:root}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:root}}
+
   jpa:
     hibernate:
       ddl-auto: none
     properties:
       hibernate:
-        default_schema: core
+        default_schema: ${SPRING_JPA_DEFAULT_SCHEMA:core}
         format_sql: true
     open-in-view: false
+
   flyway:
-    enabled: true
-    baseline-on-migrate: true
+    enabled: ${SPRING_FLYWAY_ENABLED:true}
+    baseline-on-migrate: ${SPRING_FLYWAY_BASELINE_ON_MIGRATE:true}
     locations: classpath:db/migration
-    default-schema: core
-    schemas: core
+    default-schema: ${SPRING_FLYWAY_DEFAULT_SCHEMA:core}
+    schemas: ${SPRING_FLYWAY_SCHEMAS:core}
+
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
 
 springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-
-logging:
-  level:
-    web: error
+  api-docs.enabled: true
+  swagger-ui.enabled: true

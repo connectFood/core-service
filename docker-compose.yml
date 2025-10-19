@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: connectfood-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: connectfood
+      POSTGRES_USER: connect
+      POSTGRES_PASSWORD: food
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U connect -d connectfood" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  core-service:
+    container_name: connectfood-core
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/connectfood
+      SPRING_DATASOURCE_USERNAME: connect
+      SPRING_DATASOURCE_PASSWORD: food
+
+      SPRING_JPA_DEFAULT_SCHEMA: core
+
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+      SPRING_FLYWAY_DEFAULT_SCHEMA: core
+      SPRING_FLYWAY_SCHEMAS: core
+
+      SERVER_PORT: "9090"
+      TZ: America/Sao_Paulo
+      SPRING_PROFILES_ACTIVE: "prod"
+    ports:
+      - "9090:9090"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:9090/actuator/health | grep -q '\"status\":\"UP\"' || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  db_data:
