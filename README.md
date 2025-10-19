@@ -84,7 +84,7 @@ Caminho raiz: core-service
 - Java 21
 - Spring Boot 3.5.6
   - spring-boot-starter-web, validation, data-jpa, actuator
-- SpringDoc OpenAPI Starter (2.5.0)
+- SpringDoc OpenAPI Starter (2.8.11)
 - OpenAPI Generator Maven Plugin (7.8.0)
 - PostgreSQL (driver runtime)
 - Flyway (Core + Postgres)
@@ -115,6 +115,30 @@ Passos:
 
 Perfis: o projeto usa application.yml único; você pode adicionar profiles e sobrepor propriedades conforme necessidade (ex.: application-dev.yml, application-prod.yml).
 
+## Execução com Docker
+Há um Dockerfile e um docker-compose.yml na raiz do projeto.
+
+- Subir tudo com Docker Compose (API + Postgres) em modo daemon:
+  - docker compose up --build -d
+  - Após subir, a aplicação estará em http://localhost:9090.
+  - Ver logs (tempo real): docker compose logs -f core-service
+  - Parar e remover containers e volume do banco: docker compose down -v
+  - Rebuild forçado (se mudou o código/Dockerfile): docker compose build --no-cache && docker compose up -d
+
+Observações importantes:
+- O docker-compose já provisiona o Postgres e a API com dependência de saúde (healthcheck), então não é necessário subir o banco manualmente.
+- Credenciais do banco usadas pelo compose: DB_NAME=connectfood, DB_USER=connect, DB_PASSWORD=food, host=db, port=5432.
+- O schema padrão é "core" e as migrações Flyway rodam automaticamente ao subir a API.
+
+- Buildar imagem manualmente e rodar container da app (opcional):
+  - docker build -t connectfood/core-service:local .
+  - docker run --rm -p 9090:9090 --env-file .env connectfood/core-service:local
+
+Variáveis úteis (podem ser passadas via ambiente):
+- SERVER_PORT=9090
+- DB_HOST=localhost, DB_PORT=5432, DB_NAME=connectfood, DB_USER=root, DB_PASSWORD=root
+- SPRING_FLYWAY_ENABLED=true
+
 
 ## Banco de Dados e Migrações (Flyway)
 - Datasource padrão (application.yml):
@@ -139,6 +163,71 @@ Dicas:
 
 Geração automática (mvn generate-sources/package) cria as interfaces com.connectfood.api.* e modelos com.connectfood.model.*. O controller UsersController implementa UsersApi, garantindo aderência ao contrato.
 
+## Esquema Resumido das APIs
+Abaixo um resumo dos endpoints definidos em src/main/resources/openapi/connectfood.yml. Todos os retornos de sucesso usam application/json; os erros usam application/problem+json com o schema ProblemDetails.
+
+- POST /v1/auth/login
+  - Público (sem bearer)
+  - Request: LoginValidationRequest { login, password }
+  - Responses:
+    - 200 BaseResponseOfJwtTokenResponse { success, content: { accessToken, tokenType, expiresIn } }
+    - 401 ProblemDetails (credenciais inválidas)
+
+- POST /v1/users
+  - Autenticado (Bearer JWT)
+  - Request: UserCreateRequest { fullName, email, login, password, roles[], addresses[] }
+  - Responses:
+    - 201 BaseResponseOfUserResponse { success, content: UserResponse }
+    - 400 ProblemDetails (dados inválidos)
+    - 409 ProblemDetails (e-mail já cadastrado)
+
+- GET /v1/users
+  - Autenticado (Bearer JWT)
+  - Query params: name (string, opcional), role (CUSTOMER|OWNER, opcional), page (int, default 0), size (int, default 20)
+  - Responses:
+    - 200 PageResponseOfUserResponse { success, content: UserResponse[], totalElements, page, size }
+    - 400 ProblemDetails (parâmetros inválidos)
+
+- GET /v1/users/{uuid}
+  - Autenticado (Bearer JWT)
+  - Path: uuid (string)
+  - Responses:
+    - 200 BaseResponseOfUserResponse { success, content: UserResponse }
+    - 404 ProblemDetails (usuário não encontrado)
+
+- PUT /v1/users/{uuid}
+  - Autenticado (Bearer JWT)
+  - Path: uuid (string)
+  - Request: UserUpdateRequest { fullName?, email?, login?, roles[]?, addresses[]? }
+  - Responses:
+    - 200 BaseResponseOfUserResponse { success, content: UserResponse }
+    - 400 ProblemDetails (dados inválidos)
+    - 404 ProblemDetails (usuário não encontrado)
+    - 409 ProblemDetails (e-mail já existente)
+
+- DELETE /v1/users/{uuid}
+  - Autenticado (Bearer JWT)
+  - Path: uuid (string)
+  - Responses:
+    - 204 No Content
+    - 404 ProblemDetails (usuário não encontrado)
+    - 409 ProblemDetails (restrição de deleção)
+
+- PATCH /v1/users/{uuid}/password
+  - Autenticado (Bearer JWT)
+  - Path: uuid (string)
+  - Request: ChangePasswordRequest { currentPassword, newPassword }
+  - Responses:
+    - 204 No Content (senha alterada)
+    - 401 ProblemDetails (senha atual incorreta)
+    - 404 ProblemDetails (usuário não encontrado)
+
+Observações de modelos principais:
+- BaseResponseOfUserResponse: { success: boolean, content: UserResponse }
+- BaseResponseOfJwtTokenResponse: { success: boolean, content: JwtTokenResponse }
+- PageResponseOfUserResponse: { success: boolean, content: UserResponse[], totalElements, page, size }
+- ProblemDetails (RFC 7807): { type, title, status, detail, instance, errors[]? }
+
 
 ## Padrões, Boas Práticas e Convenções
 - DRY (Don't Repeat Yourself)
@@ -155,7 +244,7 @@ Geração automática (mvn generate-sources/package) cria as interfaces com.conn
   - Open-in-view desabilitado (open-in-view: false) para evitar N+1 e vazamentos transacionais; transações devem ser controladas no serviço/adapters conforme necessidade.
   - application.yml como fonte de config; use perfis quando necessário.
 - Exceções e Tratamento de Erros
-  - Exceções de domínio específicas (NotFoundException, ConflictException, etc.) simplificam mapeamento para respostas HTTP coerentes (pode-se adicionar um @ControllerAdvice conforme evolução).
+  - Exceções de domínio específicas (NotFoundException, ConflictException, etc.) são mapeadas para respostas HTTP coerentes via @ControllerAdvice (GlobalExceptionHandler). Os erros seguem o padrão Problem Details (RFC 7807) com media type application/problem+json, podendo incluir a lista de errors[field, message] para validações.
 - Validação
   - Bean Validation (jakarta.validation) com @Valid nos endpoints e constraints nos DTOs gerados conforme OpenAPI.
 - Mapeamentos/DTOs
