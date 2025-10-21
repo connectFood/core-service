@@ -14,10 +14,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserDetailsService {
+public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
 
   private final JpaUsersRepository usersRepository;
 
+  @Override
   public UserDetails loadUserByUsername(String username) {
     final var user = usersRepository.findByLoginOrEmail(username, username)
         .orElseThrow(() -> new NotFoundException(

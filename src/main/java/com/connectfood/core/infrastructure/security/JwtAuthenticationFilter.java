@@ -2,6 +2,7 @@ package com.connectfood.core.infrastructure.security;
 
 import java.io.IOException;
 
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -19,29 +20,52 @@ import lombok.RequiredArgsConstructor;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
-  private final UserDetailsService userDetailsService;
-
+  private final org.springframework.security.core.userdetails.UserDetailsService userDetailsService;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-      throws ServletException, IOException {
+  protected void doFilterInternal(HttpServletRequest request,
+      HttpServletResponse response,
+      FilterChain filterChain) throws ServletException, IOException {
 
-    final var header = request.getHeader("Authorization");
-    if (header == null || !header.startsWith("Bearer ")) {
-      final var token = header.substring(7);
-      if (jwtService.validate(token)) {
-        final var username = jwtService.getSubject(token);
-        final var userDetails = userDetailsService.loadUserByUsername(username);
-
-        final var auth = new UsernamePasswordAuthenticationToken(
-            userDetails, null, userDetails.getAuthorities()
-        );
-
-        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext()
-            .setAuthentication(auth);
-      }
+    if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+      filterChain.doFilter(request, response);
+      return;
     }
+
+    if (SecurityContextHolder.getContext()
+        .getAuthentication() != null) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
+    String token = resolveBearerToken(request);
+    if (token != null && jwtService.validate(token)) {
+      String username = jwtService.getSubject(token);
+      var userDetails = userDetailsService.loadUserByUsername(username);
+
+      var auth = new UsernamePasswordAuthenticationToken(
+          userDetails, null, userDetails.getAuthorities());
+      auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+      SecurityContextHolder.getContext()
+          .setAuthentication(auth);
+    }
+
     filterChain.doFilter(request, response);
+  }
+
+  @Nullable
+  private String resolveBearerToken(HttpServletRequest request) {
+    String header = request.getHeader("Authorization");
+    if (header == null) {
+      return null;
+    }
+    if (!header.regionMatches(true, 0, "Bearer ", 0, 7)) {
+      return null;
+    }
+    if (header.length() <= 7) {
+      return null;
+    }
+    return header.substring(7)
+        .trim();
   }
 }

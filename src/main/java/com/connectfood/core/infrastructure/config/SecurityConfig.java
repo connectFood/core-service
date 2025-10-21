@@ -67,7 +67,7 @@ public class SecurityConfig {
             .requestMatchers("/v1/users/**")
             .authenticated()
             .anyRequest()
-            .authenticated()
+            .permitAll()
         )
         .authenticationProvider(authenticationProvider())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
