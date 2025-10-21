@@ -12,5 +12,7 @@ public interface JpaUsersRepository extends JpaRepository<UsersEntity, Long>, Jp
 
   Optional<UsersEntity> findByUuid(UUID uuid);
 
+  Optional<UsersEntity> findByLoginOrEmail(String login, String email);
+
   void deleteByUuid(UUID uuid);
 }

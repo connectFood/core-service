@@ -16,4 +16,6 @@ public interface UsersRepository {
   Users save(Users user);
 
   void deleteByUuid(String uuid);
+
+  Optional<Users> findByLoginOrEmail(String login, String email);
 }

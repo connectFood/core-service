@@ -53,4 +53,10 @@ public class UsersRepositoryImpl implements UsersRepository {
   public void deleteByUuid(String uuid) {
     repository.deleteByUuid(UUID.fromString(uuid));
   }
+
+  @Override
+  public Optional<Users> findByLoginOrEmail(String login, String email) {
+    return repository.findByLoginOrEmail(login, email)
+        .map(mapper::toDomain);
+  }
 }

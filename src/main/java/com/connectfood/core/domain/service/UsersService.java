@@ -19,4 +19,6 @@ public interface UsersService {
   void changedPassword(Users user);
 
   void deleteByUuid(String uuid);
+
+  Optional<Users> findByLoginOrEmail(String login, String email);
 }

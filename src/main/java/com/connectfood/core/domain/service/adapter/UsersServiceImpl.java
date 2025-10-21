@@ -51,4 +51,9 @@ public class UsersServiceImpl implements UsersService {
   public void deleteByUuid(String uuid) {
     repository.deleteByUuid(uuid);
   }
+
+  @Override
+  public Optional<Users> findByLoginOrEmail(String login, String email) {
+    return repository.findByLoginOrEmail(login, email);
+  }
 }

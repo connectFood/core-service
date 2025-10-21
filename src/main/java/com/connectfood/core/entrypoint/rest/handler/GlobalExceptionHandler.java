@@ -6,6 +6,7 @@ import java.util.List;
 import com.connectfood.core.domain.exception.ConflictException;
 import com.connectfood.core.domain.exception.NotFoundException;
 import com.connectfood.core.domain.exception.UnauthorizedException;
+import com.connectfood.core.domain.factory.ProblemDetailsFactory;
 import com.connectfood.model.ProblemDetails;
 import com.connectfood.model.ProblemDetailsErrorsInner;
 
@@ -16,9 +17,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+  private final ProblemDetailsFactory problemDetailsFactory;
 
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<ProblemDetails> handleNotFoundException(
@@ -55,12 +60,12 @@ public class GlobalExceptionHandler {
         "Validation failed", HttpStatus.BAD_REQUEST, request.getRequestURI(), errors);
   }
 
-//  @ExceptionHandler(Exception.class)
-//  public ResponseEntity<ProblemDetails> handleGeneric(
-//      final Exception exception, final HttpServletRequest request) {
-//    return buildApiErrorResponse(
-//        "Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
-//  }
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ProblemDetails> handleGeneric(
+      final Exception exception, final HttpServletRequest request) {
+    return buildApiErrorResponse(
+        "Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+  }
 
   private ResponseEntity<ProblemDetails> buildApiErrorResponse(
       final String message, final HttpStatus status, final String path) {
@@ -72,14 +77,9 @@ public class GlobalExceptionHandler {
       final HttpStatus status,
       final String path,
       final List<ProblemDetailsErrorsInner> errors) {
+
+    final var response = problemDetailsFactory.build(status, message, path, errors);
     return ResponseEntity.status(status)
-        .body(
-            new ProblemDetails()
-                .type("https://httpstatuses.com/" + status.value())
-                .title((status.getReasonPhrase()))
-                .status(status.value())
-                .detail(message)
-                .instance(path)
-                .errors(errors));
+        .body(response);
   }
 }
