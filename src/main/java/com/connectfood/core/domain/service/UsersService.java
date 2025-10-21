@@ -16,5 +16,7 @@ public interface UsersService {
 
   Users updated(Users user);
 
+  void changedPassword(Users user);
+
   void deleteByUuid(String uuid);
 }

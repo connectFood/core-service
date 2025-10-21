@@ -7,6 +7,7 @@ import com.connectfood.core.domain.model.Users;
 import com.connectfood.core.domain.model.commons.PageModel;
 import com.connectfood.core.domain.repository.UsersRepository;
 import com.connectfood.core.domain.service.UsersService;
+import com.connectfood.core.domain.utils.PasswordUtils;
 import com.connectfood.model.UserRole;
 
 import org.springframework.stereotype.Service;
@@ -31,12 +32,19 @@ public class UsersServiceImpl implements UsersService {
 
   @Override
   public Users created(Users user) {
+    final var password = PasswordUtils.encode(user.getPassword());
+    user.setPassword(password);
     return repository.save(user);
   }
 
   @Override
   public Users updated(Users user) {
     return repository.save(user);
+  }
+
+  @Override
+  public void changedPassword(Users user) {
+    repository.save(user);
   }
 
   @Override

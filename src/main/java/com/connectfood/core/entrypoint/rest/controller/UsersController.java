@@ -1,7 +1,9 @@
 package com.connectfood.core.entrypoint.rest.controller;
 
 import com.connectfood.api.UsersApi;
+import com.connectfood.core.application.usercase.users.ChangedPasswordUseCase;
 import com.connectfood.core.application.usercase.users.CreateUserUseCase;
+import com.connectfood.core.application.usercase.users.DeleteUserUseCase;
 import com.connectfood.core.application.usercase.users.GetUserUseCase;
 import com.connectfood.core.application.usercase.users.ListUsersUseCase;
 import com.connectfood.core.application.usercase.users.UpdateUserUseCase;
@@ -29,12 +31,14 @@ public class UsersController implements UsersApi {
   private final ListUsersUseCase listUsersUseCase;
   private final GetUserUseCase getUserUseCase;
   private final UpdateUserUseCase updateUserUseCase;
+  private final ChangedPasswordUseCase changedPasswordUseCase;
+  private final DeleteUserUseCase deleteUserUseCase;
 
   @Override
   public ResponseEntity<BaseResponseOfUserResponse> createUser(@Valid UserCreateRequest request) {
     final var result = createUserUseCase.execute(request);
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(new BaseResponseOfUserResponse());
+        .body(result);
   }
 
   @Override
@@ -52,16 +56,19 @@ public class UsersController implements UsersApi {
   @Override
   public ResponseEntity<BaseResponseOfUserResponse> updateUser(String uuid, @Valid UserUpdateRequest request) {
     final var result = updateUserUseCase.execute(uuid, request);
-    return ResponseEntity.ok(new BaseResponseOfUserResponse());
+    return ResponseEntity.ok(result);
   }
 
   @Override
   public ResponseEntity<Void> deleteUser(String uuid) {
-    return UsersApi.super.deleteUser(uuid);
+    deleteUserUseCase.execute(uuid);
+    return ResponseEntity.noContent()
+        .build();
   }
 
   @Override
-  public ResponseEntity<Void> changePassword(String uuid, @Valid ChangePasswordRequest body) {
+  public ResponseEntity<Void> changePassword(String uuid, @Valid ChangePasswordRequest request) {
+    changedPasswordUseCase.execute(uuid, request);
     return ResponseEntity.noContent()
         .build();
   }
