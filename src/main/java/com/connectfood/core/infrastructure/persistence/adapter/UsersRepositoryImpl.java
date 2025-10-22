@@ -59,4 +59,9 @@ public class UsersRepositoryImpl implements UsersRepository {
     return repository.findByLoginOrEmail(login, email)
         .map(mapper::toDomain);
   }
+
+  @Override
+  public boolean existsByEmail(String email) {
+    return repository.existsByEmail(email);
+  }
 }

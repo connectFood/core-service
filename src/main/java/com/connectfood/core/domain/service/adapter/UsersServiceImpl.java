@@ -3,6 +3,7 @@ package com.connectfood.core.domain.service.adapter;
 import java.util.List;
 import java.util.Optional;
 
+import com.connectfood.core.domain.exception.ConflictException;
 import com.connectfood.core.domain.model.Users;
 import com.connectfood.core.domain.model.commons.PageModel;
 import com.connectfood.core.domain.repository.UsersRepository;
@@ -32,6 +33,8 @@ public class UsersServiceImpl implements UsersService {
 
   @Override
   public Users created(Users user) {
+    validatedEmail(user.getEmail());
+
     final var password = PasswordUtils.encode(user.getPassword());
     user.setPassword(password);
     return repository.save(user);
@@ -39,6 +42,8 @@ public class UsersServiceImpl implements UsersService {
 
   @Override
   public Users updated(Users user) {
+    validatedEmail(user.getEmail());
+
     return repository.save(user);
   }
 
@@ -55,5 +60,12 @@ public class UsersServiceImpl implements UsersService {
   @Override
   public Optional<Users> findByLoginOrEmail(String login, String email) {
     return repository.findByLoginOrEmail(login, email);
+  }
+
+  private void validatedEmail(String email) {
+    final var existsEmail = repository.existsByEmail(email);
+    if (existsEmail) {
+      throw new ConflictException("Email already registered in the system");
+    }
   }
 }

@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
             .message(error.getDefaultMessage())));
 
     return buildApiErrorResponse(
-        "Validation failed", HttpStatus.BAD_REQUEST, request.getRequestURI(), errors);
+        "Invalid input data", HttpStatus.BAD_REQUEST, request.getRequestURI(), errors);
   }
 
   @ExceptionHandler(Exception.class)

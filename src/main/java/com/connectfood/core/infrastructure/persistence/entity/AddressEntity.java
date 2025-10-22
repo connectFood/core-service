@@ -26,7 +26,7 @@ public class AddressEntity extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
-  private UsersEntity userId;
+  private UsersEntity user;
 
   @Column(nullable = false)
   private String street;

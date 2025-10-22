@@ -35,8 +35,6 @@ public class AuthenticationUseCase {
     final var user = service.findByLoginOrEmail(username, username)
         .orElseThrow(() -> new BadRequestException("Invalid credentials"));
 
-    System.out.println("Password: " + PasswordUtils.encode(request.getPassword()));
-
     final var claims = new HashMap<String, Object>();
     claims.put("fullName", user.getFullName());
     claims.put("email", user.getEmail());

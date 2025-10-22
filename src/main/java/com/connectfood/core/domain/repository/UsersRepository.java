@@ -18,4 +18,6 @@ public interface UsersRepository {
   void deleteByUuid(String uuid);
 
   Optional<Users> findByLoginOrEmail(String login, String email);
+
+  boolean existsByEmail(String email);
 }

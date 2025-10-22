@@ -4,6 +4,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import com.connectfood.core.domain.model.Users;
+import com.connectfood.model.AddressResponse;
 import com.connectfood.model.UserCreateRequest;
 import com.connectfood.model.UserResponse;
 import com.connectfood.model.UserUpdateRequest;
@@ -12,6 +13,24 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UsersMapper {
+
+  public UserResponse toResponse(Users user, List<AddressResponse> addressesResponse) {
+
+    UserResponse response = new UserResponse();
+    response.setUuid(user.getUuid());
+    response.setFullName(user.getFullName());
+    response.setEmail(user.getEmail());
+    response.setLogin(user.getLogin());
+    response.setRoles(user.getRoles());
+    response.setAddresses(addressesResponse);
+    response.setCreatedAt(user.getCreatedAt()
+        .atZone(ZoneId.systemDefault())
+        .toOffsetDateTime());
+    response.setLastUpdateAt(user.getUpdatedAt()
+        .atZone(ZoneId.systemDefault())
+        .toOffsetDateTime());
+    return response;
+  }
 
   public UserResponse toResponse(Users user) {
 
