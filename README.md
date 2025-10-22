@@ -273,3 +273,88 @@ Observações de modelos principais:
 
 ---
 Qualquer dúvida, consulte o OpenApiConfig para informações expostas no Swagger e o application.yml para configurações padrão (porta 9090, datasource, Flyway e SpringDoc).
+
+
+## Segurança e Autenticação (JWT)
+Este serviço utiliza autenticação stateless baseada em JWT.
+
+- Header esperado: Authorization: Bearer <token>
+- Configurações principais (application.yml):
+  - security.jwt.secret: segredo usado para assinar o token (HMAC)
+  - security.jwt.expiration-seconds: tempo de expiração do token em segundos
+- Principais componentes:
+  - SecurityConfig, JwtAuthenticationFilter, JwtService, RestAuthEntryPoint, RestAccessDeniedHandler, UserDetailsService
+  - Controllers: AuthenticationController (login) e UsersController (CRUD de usuários)
+
+Fluxo de autenticação (exemplos):
+1) Obter token
+- Endpoint: POST http://localhost:9090/v1/auth/login
+- Body:
+  {
+    "login": "<email-ou-login>",
+    "password": "<senha>"
+  }
+- cURL:
+  curl -s -X POST "http://localhost:9090/v1/auth/login" \
+    -H "Content-Type: application/json" \
+    -d '{"login":"admin@connectfood.io","password":"admin123"}'
+
+Resposta de sucesso (200):
+  {
+    "success": true,
+    "content": {
+      "accessToken": "<jwt>",
+      "tokenType": "Bearer",
+      "expiresIn": 3600
+    }
+  }
+
+2) Consumir endpoints protegidos
+- Ex.: GET /v1/users
+- cURL:
+  TOKEN="<jwt>"
+  curl -H "Authorization: Bearer $TOKEN" http://localhost:9090/v1/users
+
+Erros comuns:
+- 401 Unauthorized: credenciais inválidas no login, token ausente/expirado.
+- 403 Forbidden: token válido, porém sem permissão.
+Os erros seguem o padrão Problem Details (RFC 7807), tratados por GlobalExceptionHandler e handlers de segurança.
+
+
+## Healthcheck / Actuator
+- Actuator está incluído e o health endpoint é usado pelo docker-compose para healthcheck da aplicação.
+- Endpoints relevantes:
+  - GET http://localhost:9090/actuator/health (UP quando saudável)
+- Em produção (compose), a aplicação aguarda o Postgres ficar saudável antes de iniciar (depends_on + healthcheck), e o container da API só é considerado saudável quando o actuator/health retorna UP.
+
+
+## Variáveis de Ambiente e Perfis
+Principais variáveis que você pode ajustar via ambiente (CLI, compose, .env):
+- SERVER_PORT (padrão: 9090)
+- Datasource:
+  - SPRING_DATASOURCE_URL (ex.: jdbc:postgresql://localhost:5432/connectfood)
+  - SPRING_DATASOURCE_USERNAME (padrão: root)
+  - SPRING_DATASOURCE_PASSWORD (padrão: root)
+- JPA/Flyway:
+  - SPRING_JPA_DEFAULT_SCHEMA (padrão: core)
+  - SPRING_FLYWAY_ENABLED (padrão: true)
+  - SPRING_FLYWAY_BASELINE_ON_MIGRATE (padrão: true)
+  - SPRING_FLYWAY_DEFAULT_SCHEMA (padrão: core)
+  - SPRING_FLYWAY_SCHEMAS (padrão: core)
+- JWT:
+  - JWT_SECRET (padrão no application.yml; altere em produção)
+  - JWT_EXPIRATION_SECONDS (padrão: 3600)
+- Outros:
+  - SPRING_PROFILES_ACTIVE (compose usa "prod")
+  - TZ (ex.: America/Sao_Paulo)
+
+Observações:
+- O docker-compose já define os valores adequados para executar localmente com Postgres no container.
+- Em ambientes produtivos, SEMPRE defina um JWT_SECRET forte via variável de ambiente/secret.
+
+
+## Troubleshooting (rápido)
+- Swagger não abre? Verifique se a aplicação está em http://localhost:9090 e acesse /swagger-ui/index.html.
+- Erro de conexão com DB local? Ajuste SPRING_DATASOURCE_URL/USERNAME/PASSWORD ou suba via docker compose.
+- Flyway falhou? Verifique se o schema/database existem e as permissões do usuário; rode com SPRING_FLYWAY_BASELINE_ON_MIGRATE=true se iniciando em base existente.
+- 401/403 nos endpoints? Gere novo token via /v1/auth/login e passe o header Authorization corretamente.
