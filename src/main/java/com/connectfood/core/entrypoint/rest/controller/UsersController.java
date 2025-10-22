@@ -11,7 +11,6 @@ import com.connectfood.model.BaseResponseOfUserResponse;
 import com.connectfood.model.ChangePasswordRequest;
 import com.connectfood.model.PageResponseOfUserResponse;
 import com.connectfood.model.UserCreateRequest;
-import com.connectfood.model.UserRole;
 import com.connectfood.model.UserUpdateRequest;
 
 import org.springframework.http.HttpStatus;
@@ -42,8 +41,8 @@ public class UsersController implements UsersApi {
   }
 
   @Override
-  public ResponseEntity<PageResponseOfUserResponse> listUsers(String name, UserRole role, Integer page, Integer size) {
-    final var result = listUsersUseCase.execute(name, role, page, size);
+  public ResponseEntity<PageResponseOfUserResponse> listUsers(String name, Integer page, Integer size) {
+    final var result = listUsersUseCase.execute(name, page, size);
     return ResponseEntity.ok(result);
   }
 

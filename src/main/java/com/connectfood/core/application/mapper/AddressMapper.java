@@ -4,6 +4,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import com.connectfood.core.domain.model.Address;
+import com.connectfood.model.AddressCreateRequest;
 import com.connectfood.model.AddressResponse;
 import com.connectfood.model.AddressUpsertRequest;
 
@@ -41,7 +42,7 @@ public class AddressMapper {
         .toList();
   }
 
-  public Address create(AddressUpsertRequest request) {
+  public Address create(AddressCreateRequest request) {
     return Address.builder()
         .street(request.getStreet())
         .number(request.getNumber())

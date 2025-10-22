@@ -22,8 +22,8 @@ public class UsersServiceImpl implements UsersService {
   private final UsersRepository repository;
 
   @Override
-  public PageModel<List<Users>> findAll(String name, UserRole role, Integer page, Integer size) {
-    return repository.findAll(name, role, page, size);
+  public PageModel<List<Users>> findAll(String name, Integer page, Integer size) {
+    return repository.findAll(name, page, size);
   }
 
   @Override

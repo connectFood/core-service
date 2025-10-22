@@ -9,7 +9,7 @@ import com.connectfood.model.UserRole;
 
 public interface UsersRepository {
 
-  PageModel<List<Users>> findAll(String name, UserRole role, Integer page, Integer size);
+  PageModel<List<Users>> findAll(String name, Integer page, Integer size);
 
   Optional<Users> findByUuid(String uuid);
 

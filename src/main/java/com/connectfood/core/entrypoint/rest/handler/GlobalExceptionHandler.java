@@ -12,6 +12,7 @@ import com.connectfood.model.ProblemDetailsErrorsInner;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -41,6 +42,13 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(UnauthorizedException.class)
   public ResponseEntity<ProblemDetails> handleUnauthorizedException(
+      final UnauthorizedException exception, final HttpServletRequest request) {
+    return buildApiErrorResponse(
+        exception.getMessage(), HttpStatus.UNAUTHORIZED, request.getRequestURI());
+  }
+
+  @ExceptionHandler(InternalAuthenticationServiceException.class)
+  public ResponseEntity<ProblemDetails> handleInternalAuthenticationServiceException(
       final UnauthorizedException exception, final HttpServletRequest request) {
     return buildApiErrorResponse(
         exception.getMessage(), HttpStatus.UNAUTHORIZED, request.getRequestURI());

@@ -2,7 +2,7 @@ package com.connectfood.core.infrastructure.security;
 
 import java.util.stream.Collectors;
 
-import com.connectfood.core.domain.exception.NotFoundException;
+import com.connectfood.core.domain.exception.UnauthorizedException;
 import com.connectfood.core.infrastructure.persistence.jpa.JpaUsersRepository;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,8 +21,8 @@ public class UserDetailsService implements org.springframework.security.core.use
   @Override
   public UserDetails loadUserByUsername(String username) {
     final var user = usersRepository.findByLoginOrEmail(username, username)
-        .orElseThrow(() -> new NotFoundException(
-            "User not found"));
+        .orElseThrow(() -> new UnauthorizedException(
+            "Invalid Credentials"));
 
     final var authorities =
         user.getRoles()
