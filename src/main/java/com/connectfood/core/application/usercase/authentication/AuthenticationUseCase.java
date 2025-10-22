@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import com.connectfood.core.domain.exception.BadRequestException;
 import com.connectfood.core.domain.service.UsersService;
+import com.connectfood.core.domain.utils.PasswordUtils;
 import com.connectfood.core.infrastructure.security.JwtService;
 import com.connectfood.model.BaseResponseOfJwtTokenResponse;
 import com.connectfood.model.JwtTokenResponse;
@@ -33,6 +34,8 @@ public class AuthenticationUseCase {
     authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
     final var user = service.findByLoginOrEmail(username, username)
         .orElseThrow(() -> new BadRequestException("Invalid credentials"));
+
+    System.out.println("Password: " + PasswordUtils.encode(request.getPassword()));
 
     final var claims = new HashMap<String, Object>();
     claims.put("fullName", user.getFullName());

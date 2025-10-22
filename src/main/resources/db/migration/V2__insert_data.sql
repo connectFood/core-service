@@ -34,7 +34,7 @@ first_names TEXT[] := ARRAY[
     v_email_login_prefix TEXT;
     v_address_info JSONB;
     -- Hash Bcrypt para a senha "123456", no formato padrão ($2a$10$) usado por bibliotecas Java como o Spring Security.
-    v_password_hash TEXT := '$2a$10$2.A.t5Jc25/Iq293Y2yL7uLshwKj0dL5Q16p22a2VnEa51s2O6Y9O';
+    v_password_hash TEXT := '$2a$10$5KWvd29OvMeF3orAcYIdt.TfJ0xiburOm1njTy5UXhzsYJrgqElRK';
 
 BEGIN
     RAISE NOTICE 'Iniciando a criação de 200 usuários com hash de senha compatível com Java/Spring...';
