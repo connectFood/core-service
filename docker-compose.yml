@@ -18,6 +18,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    networks:
+      - connectfood_net
 
   core-service:
     container_name: connectfood-core
@@ -42,14 +44,14 @@ services:
 
       SERVER_PORT: "9090"
       TZ: America/Sao_Paulo
-      SPRING_PROFILES_ACTIVE: "prod"
     ports:
       - "9090:9090"
-    healthcheck:
-      test: [ "CMD-SHELL", "wget -qO- http://localhost:9090/actuator/health | grep -q '\"status\":\"UP\"' || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 20
+    networks:
+      - connectfood_net
 
 volumes:
   db_data:
+
+networks:
+  connectfood_net:
+    driver: bridge
