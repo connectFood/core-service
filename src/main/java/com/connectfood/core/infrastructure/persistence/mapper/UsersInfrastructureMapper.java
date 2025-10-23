@@ -44,7 +44,8 @@ public class UsersInfrastructureMapper {
     if (user.getLogin() != null) {
       entity.setLogin(user.getLogin());
     }
-    if (user.getRoles() != null) {
+    if (!user.getRoles()
+        .isEmpty()) {
       entity.setRoles(user.getRoles());
     }
     return entity;

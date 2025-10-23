@@ -28,7 +28,8 @@ public class UpdateUserUseCase {
       }
     }
 
-    final var result = service.updated(uuid, mapper.update(request, user));
+    final var userUpdate = mapper.update(request, user);
+    final var result = service.updated(uuid, userUpdate);
 
     final var response = mapper.toResponse(result);
     return new BaseResponseOfUserResponse().content(response);

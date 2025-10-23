@@ -75,7 +75,7 @@ public class UsersMapper {
     if (request.getLogin() != null) {
       user.setLogin(request.getLogin());
     }
-    if (request.getRoles() != null) {
+    if (!request.getRoles().isEmpty()) {
       user.setRoles(request.getRoles());
     }
     return user;

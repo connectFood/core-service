@@ -16,7 +16,7 @@ public interface UsersRepository {
 
   Users save(String uuid, Users user);
 
-  Users changedPassword(String uuid, Users user);
+  void changedPassword(String uuid, Users user);
 
   void deleteByUuid(String uuid);
 

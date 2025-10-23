@@ -62,12 +62,12 @@ public class UsersRepositoryImpl implements UsersRepository {
   }
 
   @Override
-  public Users changedPassword(String uuid, Users user) {
+  public void changedPassword(String uuid, Users user) {
     final var entity = repository.findByUuid(UUID.fromString(uuid))
         .orElseThrow(() -> new NotFoundException("User not found"));
 
     final var entityUpdated = repository.save(mapper.toEntity(entity, user.getPassword()));
-    return mapper.toDomain(entityUpdated);
+    mapper.toDomain(entityUpdated);
   }
 
   @Override
