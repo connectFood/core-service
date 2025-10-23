@@ -42,6 +42,8 @@ public class AddressRepositoryImpl implements AddressRepository {
 
   @Override
   public void deleteByUserUuid(String userUuid) {
-    repository.deleteByUserUuid(UUID.fromString(userUuid));
+    final var entities = repository.findAllByUserUuid(UUID.fromString(userUuid));
+
+    repository.deleteAll(entities);
   }
 }

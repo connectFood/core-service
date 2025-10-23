@@ -20,7 +20,15 @@ public class UpdateUserUseCase {
   public BaseResponseOfUserResponse execute(String uuid, UserUpdateRequest request) {
     final var user = service.findByUuid(uuid)
         .orElseThrow(() -> new NotFoundException("User not found"));
-    final var result = service.updated(mapper.update(request, user));
+
+    if (request.getEmail() != null) {
+      if (!request.getEmail()
+          .equals(user.getEmail())) {
+        service.validatedEmail(request.getEmail());
+      }
+    }
+
+    final var result = service.updated(uuid, mapper.update(request, user));
 
     final var response = mapper.toResponse(result);
     return new BaseResponseOfUserResponse().content(response);

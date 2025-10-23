@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import com.connectfood.core.domain.model.Users;
 import com.connectfood.core.domain.model.commons.PageModel;
-import com.connectfood.model.UserRole;
 
 public interface UsersRepository {
 
@@ -14,6 +13,10 @@ public interface UsersRepository {
   Optional<Users> findByUuid(String uuid);
 
   Users save(Users user);
+
+  Users save(String uuid, Users user);
+
+  Users changedPassword(String uuid, Users user);
 
   void deleteByUuid(String uuid);
 

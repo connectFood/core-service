@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 
 @RestControllerAdvice
@@ -68,12 +69,26 @@ public class GlobalExceptionHandler {
         "Invalid input data", HttpStatus.BAD_REQUEST, request.getRequestURI(), errors);
   }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ProblemDetails> handleGeneric(
-      final Exception exception, final HttpServletRequest request) {
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ProblemDetails> handleConstraintViolationException(
+      final ConstraintViolationException exception, final HttpServletRequest request) {
+    List<ProblemDetailsErrorsInner> errors = new ArrayList<>();
+    exception
+        .getConstraintViolations()
+        .forEach(error -> errors.add(new ProblemDetailsErrorsInner().field(error.getPropertyPath()
+                .toString())
+            .message(error.getMessage())));
+
     return buildApiErrorResponse(
-        "Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+        "Invalid input data", HttpStatus.BAD_REQUEST, request.getRequestURI(), errors);
   }
+
+//  @ExceptionHandler(Exception.class)
+//  public ResponseEntity<ProblemDetails> handleGeneric(
+//      final Exception exception, final HttpServletRequest request) {
+//    return buildApiErrorResponse(
+//        "Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+//  }
 
   private ResponseEntity<ProblemDetails> buildApiErrorResponse(
       final String message, final HttpStatus status, final String path) {

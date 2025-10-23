@@ -41,15 +41,13 @@ public class UsersServiceImpl implements UsersService {
   }
 
   @Override
-  public Users updated(Users user) {
-    validatedEmail(user.getEmail());
-
-    return repository.save(user);
+  public Users updated(String uuid, Users user) {
+    return repository.save(uuid, user);
   }
 
   @Override
-  public void changedPassword(Users user) {
-    repository.save(user);
+  public void changedPassword(String uuid, Users user) {
+    repository.changedPassword(uuid, user);
   }
 
   @Override
@@ -62,7 +60,8 @@ public class UsersServiceImpl implements UsersService {
     return repository.findByLoginOrEmail(login, email);
   }
 
-  private void validatedEmail(String email) {
+  @Override
+  public void validatedEmail(String email) {
     final var existsEmail = repository.existsByEmail(email);
     if (existsEmail) {
       throw new ConflictException("Email already registered in the system");

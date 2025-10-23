@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.connectfood.core.domain.exception.NotFoundException;
 import com.connectfood.core.domain.model.Users;
 import com.connectfood.core.domain.model.commons.PageModel;
 import com.connectfood.core.domain.repository.UsersRepository;
@@ -49,6 +50,24 @@ public class UsersRepositoryImpl implements UsersRepository {
   public Users save(Users user) {
     final var entity = repository.save(mapper.toEntity(user));
     return mapper.toDomain(entity);
+  }
+
+  @Override
+  public Users save(String uuid, Users user) {
+    final var entity = repository.findByUuid(UUID.fromString(uuid))
+        .orElseThrow(() -> new NotFoundException("User not found"));
+
+    final var entityUpdated = repository.save(mapper.toEntity(entity, user));
+    return mapper.toDomain(entityUpdated);
+  }
+
+  @Override
+  public Users changedPassword(String uuid, Users user) {
+    final var entity = repository.findByUuid(UUID.fromString(uuid))
+        .orElseThrow(() -> new NotFoundException("User not found"));
+
+    final var entityUpdated = repository.save(mapper.toEntity(entity, user.getPassword()));
+    return mapper.toDomain(entityUpdated);
   }
 
   @Override

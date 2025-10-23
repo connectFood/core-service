@@ -15,6 +15,4 @@ public interface JpaAddressRepository extends JpaRepository<AddressEntity, Long>
   List<AddressEntity> findAllByUserUuid(UUID uuid);
 
   Optional<AddressEntity> findByUuid(UUID uuid);
-
-  void deleteByUserUuid(UUID userUuid);
 }

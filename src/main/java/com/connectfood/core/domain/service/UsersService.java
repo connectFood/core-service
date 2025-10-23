@@ -13,11 +13,13 @@ public interface UsersService {
 
   Users created(Users user);
 
-  Users updated(Users user);
+  Users updated(String uuid, Users user);
 
-  void changedPassword(Users user);
+  void changedPassword(String uuid, Users user);
 
   void deleteByUuid(String uuid);
 
   Optional<Users> findByLoginOrEmail(String login, String email);
+
+  void validatedEmail(String email);
 }

@@ -66,10 +66,18 @@ public class UsersMapper {
   }
 
   public Users update(UserUpdateRequest request, Users user) {
-    user.setFullName(request.getFullName());
-    user.setEmail(request.getEmail());
-    user.setLogin(request.getLogin());
-    user.setRoles(request.getRoles());
+    if (request.getFullName() != null) {
+      user.setFullName(request.getFullName());
+    }
+    if (request.getEmail() != null) {
+      user.setEmail(request.getEmail());
+    }
+    if (request.getLogin() != null) {
+      user.setLogin(request.getLogin());
+    }
+    if (request.getRoles() != null) {
+      user.setRoles(request.getRoles());
+    }
     return user;
   }
 }
