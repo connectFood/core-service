@@ -33,6 +33,39 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserCreateRequest'
+            examples:
+              valid:
+                summary: Valid user creation
+                value:
+                  fullName: "Lucas Santos"
+                  email: "lucas@example.com"
+                  login: "lucas.santos"
+                  password: "Secr3t@123"
+                  roles: ["OWNER"]
+                  addresses:
+                    - street: "Av. Paulista"
+                      number: "1000"
+                      neighborhood: "Bela Vista"
+                      city: "São Paulo"
+                      state: "SP"
+                      zipCode: "01310-100"
+                      country: "Brasil"
+              invalidEmail:
+                summary: Invalid email (400)
+                value:
+                  fullName: "Lucas Santos"
+                  email: "lucas@@example"
+                  login: "lucas.santos"
+                  password: "123"
+                  roles: ["OWNER"]
+                  addresses:
+                    - street: "Av. Paulista"
+                      number: "1000"
+                      neighborhood: "Bela Vista"
+                      city: "São Paulo"
+                      state: "SP"
+                      zipCode: "01310-100"
+                      country: "Brasil"
       responses:
         '201':
           description: User created successfully.
@@ -40,18 +73,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseResponseOfUserResponse'
+              example:
+                success: true
+                content:
+                  uuid: "8f1b3b3a-9f2d-4e5e-9d2a-123456789abc"
+                  fullName: "Lucas Santos"
+                  email: "lucas@example.com"
+                  login: "lucas.santos"
+                  roles: ["OWNER"]
+                  createdAt: "2025-10-20T12:00:00"
+                  lastUpdateAt: "2025-10-20T12:00:00"
+                  addresses:
+                    - uuid: "d9f6a2e1-2b34-4c56-9a78-abcdef012345"
+                      street: "Av. Paulista"
+                      number: "1000"
+                      neighborhood: "Bela Vista"
+                      city: "São Paulo"
+                      state: "SP"
+                      zipCode: "01310-100"
+                      country: "Brasil"
+                      isDefault: true
+                      createdAt: "2025-10-20T12:00:00"
+                      lastUpdateAt: "2025-10-20T12:00:00"
         '400':
           description: Invalid input data.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/validation-error"
+                title: "Bad Request"
+                status: 400
+                detail: "Validation failed for request."
+                instance: "/v1/users"
+                errors:
+                  - field: "email"
+                    message: "must be a well-formed email address"
+                  - field: "password"
+                    message: "size must be between 6 and 2147483647"
         '409':
           description: Email already registered in the system.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/duplicate-email"
+                title: "Conflict"
+                status: 409
+                detail: "Email already exists: lucas@example.com"
+                instance: "/v1/users"
+                errors:
+                  - field: "email"
+                    message: "already in use"
 
     get:
       tags: [Users]
@@ -87,12 +162,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PageResponseOfUserResponse'
+              examples:
+                emptyPage:
+                  summary: Empty page
+                  value:
+                    success: true
+                    content: []
+                    totalElements: 0
+                    page: 0
+                    size: 20
+                someResults:
+                  summary: With results
+                  value:
+                    success: true
+                    content:
+                      - uuid: "8f1b3b3a-9f2d-4e5e-9d2a-123456789abc"
+                        fullName: "Lucas Santos"
+                        email: "lucas@example.com"
+                        login: "lucas.santos"
+                        roles: ["OWNER"]
+                        createdAt: "2025-10-20T12:00:00"
+                        lastUpdateAt: "2025-10-21T09:30:00"
+                        addresses: []
+                    totalElements: 1
+                    page: 0
+                    size: 20
         '400':
           description: Invalid filter parameter.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/invalid-parameter"
+                title: "Bad Request"
+                status: 400
+                detail: "Parameter 'size' must be >= 1"
+                instance: "/v1/users?size=0"
 
   /v1/users/{uuid}:
     get:
@@ -115,12 +221,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseResponseOfUserResponse'
+              example:
+                success: true
+                content:
+                  uuid: "8f1b3b3a-9f2d-4e5e-9d2a-123456789abc"
+                  fullName: "Lucas Santos"
+                  email: "lucas@example.com"
+                  login: "lucas.santos"
+                  roles: ["OWNER"]
+                  createdAt: "2025-10-20T12:00:00"
+                  lastUpdateAt: "2025-10-21T09:30:00"
+                  addresses: []
         '404':
           description: User not found.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/user-not-found"
+                title: "Not Found"
+                status: 404
+                detail: "User not found for uuid=8f1b3b3a-9f2d-4e5e-9d2a-000000000000"
+                instance: "/v1/users/8f1b3b3a-9f2d-4e5e-9d2a-000000000000"
 
     put:
       tags: [Users]
@@ -142,6 +265,24 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserUpdateRequest'
+            examples:
+              updateNameAndAddress:
+                summary: Update name and address list
+                value:
+                  fullName: "Lucas S. Mumbarra"
+                  addresses:
+                    - street: "Rua das Flores"
+                      number: "200"
+                      neighborhood: "Centro"
+                      city: "Cajamar"
+                      state: "SP"
+                      zipCode: "07700-000"
+                      country: "Brasil"
+                      isDefault: true
+              invalidEmail:
+                summary: Invalid email (400)
+                value:
+                  email: "invalid@@mail"
       responses:
         '200':
           description: User data updated successfully.
@@ -149,24 +290,70 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseResponseOfUserResponse'
+              example:
+                success: true
+                content:
+                  uuid: "8f1b3b3a-9f2d-4e5e-9d2a-123456789abc"
+                  fullName: "Lucas S. Mumbarra"
+                  email: "lucas@example.com"
+                  login: "lucas.santos"
+                  roles: ["OWNER"]
+                  createdAt: "2025-10-20T12:00:00"
+                  lastUpdateAt: "2025-10-22T10:00:00"
+                  addresses:
+                    - uuid: "d9f6a2e1-2b34-4c56-9a78-abcdef012345"
+                      street: "Rua das Flores"
+                      number: "200"
+                      neighborhood: "Centro"
+                      city: "Cajamar"
+                      state: "SP"
+                      zipCode: "07700-000"
+                      country: "Brasil"
+                      isDefault: true
+                      createdAt: "2025-10-20T12:00:00"
+                      lastUpdateAt: "2025-10-22T10:00:00"
         '400':
           description: Invalid input data.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/validation-error"
+                title: "Bad Request"
+                status: 400
+                detail: "Validation failed for request."
+                instance: "/v1/users/8f1b3b3a-..."
+                errors:
+                  - field: "email"
+                    message: "must be a well-formed email address"
         '409':
           description: Email already exists.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/duplicate-email"
+                title: "Conflict"
+                status: 409
+                detail: "Email already exists: lucas@example.com"
+                instance: "/v1/users/8f1b3b3a-..."
+                errors:
+                  - field: "email"
+                    message: "already in use"
         '404':
           description: User not found.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/user-not-found"
+                title: "Not Found"
+                status: 404
+                detail: "User not found for uuid=8f1b3b3a-..."
+                instance: "/v1/users/8f1b3b3a-..."
 
     delete:
       tags: [Users]
@@ -190,12 +377,24 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/user-not-found"
+                title: "Not Found"
+                status: 404
+                detail: "User not found for uuid=8f1b3b3a-..."
+                instance: "/v1/users/8f1b3b3a-..."
         '409':
           description: Deletion not allowed due to existing constraints (e.g., linked resources).
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/delete-conflict"
+                title: "Conflict"
+                status: 409
+                detail: "User cannot be deleted due to existing constraints."
+                instance: "/v1/users/8f1b3b3a-..."
 
   /v1/users/{uuid}/password:
     patch:
@@ -218,6 +417,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ChangePasswordRequest'
+            examples:
+              valid:
+                summary: Valid change
+                value:
+                  currentPassword: "123456"
+                  newPassword: "N0vaSenha@123"
+              wrongCurrent:
+                summary: Wrong current password (401)
+                value:
+                  currentPassword: "errada"
+                  newPassword: "N0vaSenha@123"
       responses:
         '204':
           description: Password changed successfully.
@@ -227,12 +437,24 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/wrong-password"
+                title: "Unauthorized"
+                status: 401
+                detail: "Current password is incorrect."
+                instance: "/v1/users/8f1b3b3a-.../password"
         '404':
           description: User not found.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/user-not-found"
+                title: "Not Found"
+                status: 404
+                detail: "User not found for uuid=8f1b3b3a-..."
+                instance: "/v1/users/8f1b3b3a-.../password"
 
   /v1/auth/login:
     post:
@@ -242,12 +464,15 @@ paths:
       operationId: login
       security: []
       requestBody:
-        description: Credentials for authentication (login or email and password).
+        description: Default credentials for professor test user.
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/LoginValidationRequest'
+            example:
+              login: "professor.fiap@qa.exemplo.com"
+              password: "123456"
       responses:
         '200':
           description: Valid credentials; returns JWT token.
@@ -255,12 +480,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseResponseOfJwtTokenResponse'
+              example:
+                success: true
+                content:
+                  accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  tokenType: "Bearer"
+                  expiresIn: 3600
         '401':
           description: Invalid credentials.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://connectfood.dev/problems/invalid-credentials"
+                title: "Unauthorized"
+                status: 401
+                detail: "Invalid login or password."
+                instance: "/v1/auth/login"
 
 components:
   securitySchemes:
@@ -323,7 +560,6 @@ components:
           format: date-time
           description: LocalDateTime (no timezone).
 
-    # >>> STRICT for CREATE (required fields)
     AddressCreateRequest:
       type: object
       description: Address payload required when creating a user.
@@ -363,8 +599,17 @@ components:
         isDefault:
           type: boolean
           description: Indicates whether this address is the default one.
+      example:
+        street: "Rua das Flores"
+        number: "200"
+        complement: "Ap 21"
+        neighborhood: "Centro"
+        city: "Cajamar"
+        state: "SP"
+        zipCode: "07700-000"
+        country: "Brasil"
+        isDefault: true
 
-    # >>> FLEXIBLE for UPDATE (upsert semantics)
     AddressUpsertRequest:
       type: object
       description: Address payload for create/update operations (upsert) when updating a user.
@@ -439,6 +684,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AddressResponse'
+      example:
+        uuid: "8f1b3b3a-9f2d-4e5e-9d2a-123456789abc"
+        fullName: "Lucas Santos"
+        email: "lucas@example.com"
+        login: "lucas.santos"
+        roles: ["OWNER"]
+        createdAt: "2025-10-20T12:00:00"
+        lastUpdateAt: "2025-10-21T09:30:00"
+        addresses:
+          - uuid: "d9f6a2e1-2b34-4c56-9a78-abcdef012345"
+            street: "Av. Paulista"
+            number: "1000"
+            neighborhood: "Bela Vista"
+            city: "São Paulo"
+            state: "SP"
+            zipCode: "01310-100"
+            country: "Brasil"
+            isDefault: true
+            createdAt: "2025-10-20T12:00:00"
+            lastUpdateAt: "2025-10-21T09:30:00"
 
     UserCreateRequest:
       type: object
@@ -532,6 +797,10 @@ components:
           type: integer
           format: int64
           description: Token expiration time in seconds.
+      example:
+        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        tokenType: "Bearer"
+        expiresIn: 3600
 
     ProblemDetails:
       type: object
