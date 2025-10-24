@@ -170,8 +170,9 @@ Status esperados por rota (exemplos principais):
 
 ## 📬 10. Collection Postman
 Há uma collection com cenários baseados no Swagger para validação ponta a ponta:
-- Collection: ConnectFood-swagger-scenarios.postman_collection.json
-- Environment: ConnectFood-swagger-scenarios-local.postman_environment.json
+- Local: ver docs/postman
+- Collection: ConnectFood - Collection (FIAP TC1).postman_collection.json
+- Environment: ConnectFood - Environments.postman_environment.json
 
 Como usar:
 1. Importe ambos os arquivos no Postman.

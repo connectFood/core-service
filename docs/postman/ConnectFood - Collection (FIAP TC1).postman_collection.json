@@ -1,0 +1,1488 @@
+{
+  "info": {
+    "_postman_id": "85da5e0c-5fbb-4ba5-96c6-406e2aeefc09",
+    "name": "ConnectFood - Collection (FIAP TC1)",
+    "description": "Collection containing all endpoints available in swagger, for test execution and validations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+    "_exporter_id": "29067075",
+    "_collection_link": "https://argys-tech.postman.co/workspace/3d9105a2-e04d-4e18-ac7e-bae19d3ed0b1/collection/29067075-85da5e0c-5fbb-4ba5-96c6-406e2aeefc09?action=share&source=collection_link&creator=29067075"
+  },
+  "item": [
+    {
+      "name": "0) Cenários de teste - automatico",
+      "item": [
+        {
+          "name": "POST /v1/auth/login — ok (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.expect(j).to.have.property('success', true);",
+                  "pm.environment.set('accessToken', j.content.accessToken);",
+                  "pm.environment.set('tokenType', j.content.tokenType||'Bearer');",
+                  "pm.environment.set('expiresIn', j.content.expiresIn||3600);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"professor.fiap@qa.exemplo.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/auth/login"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /v1/auth/login — invalid (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401',()=>pm.response.to.have.status(401));",
+                  "const j=pm.response.json(); pm.expect(j).to.have.property('status',401);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"invalid@user.com\",\n  \"password\": \"wrong\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/auth/login"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /v1/users — create User OWNER (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201',()=>pm.response.to.have.status(201));",
+                  "const j=pm.response.json();",
+                  "const req=JSON.parse(pm.request.body.raw);",
+                  "pm.environment.set('userA_uuid', j.content.uuid);",
+                  "pm.environment.set('userA_email', j.content.email);",
+                  "pm.environment.set('userA_password', req.password)",
+                  "pm.environment.set('userA_fullname', req.fullName)"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{$randomFullName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"login\": \"{{$randomUserName}}\",\n  \"password\": \"{{$randomPassword}}\",\n  \"roles\": [\n    \"OWNER\"\n  ],\n  \"addresses\": [\n    {\n      \"street\": \"{{$randomStreetName}}\",\n      \"number\": \"{{$randomInt}}\",\n      \"neighborhood\": \"Bela Vista\",\n      \"city\": \"{{$randomCity}}\",\n      \"state\": \"{{$randomCountryCode}}\",\n      \"zipCode\": \"01310-100\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /v1/users — invalid payload (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400',()=>pm.response.to.have.status(400));",
+                  "const j=pm.response.json(); pm.expect(j).to.have.property('status',400);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Lucas\",\n  \"email\": \"lucas@@example\",\n  \"login\": \"lucas.santos\",\n  \"password\": \"123\",\n  \"roles\": [\n    \"OWNER\"\n  ],\n  \"addresses\": [\n    {\n      \"street\": \"Av. Paulista\",\n      \"number\": \"1000\",\n      \"neighborhood\": \"Bela Vista\",\n      \"city\": \"São Paulo\",\n      \"state\": \"SP\",\n      \"zipCode\": \"01310-100\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /v1/users — duplicate email (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409',()=>pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Existing User\",\n  \"email\": \"{{userA_email}}\",\n  \"login\": \"existing.{{randomA}}\",\n  \"password\": \"Secr3t@123\",\n  \"roles\": [\n    \"CUSTOMER\"\n  ],\n  \"addresses\": [\n    {\n      \"street\": \"Rua X\",\n      \"number\": \"10\",\n      \"neighborhood\": \"Y\",\n      \"city\": \"Z\",\n      \"state\": \"SP\",\n      \"zipCode\": \"07700-000\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /v1/users — create User CUSTOMER (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201',()=>pm.response.to.have.status(201));",
+                  "const j=pm.response.json();",
+                  "pm.environment.set('userB_uuid', j.content.uuid);",
+                  "pm.environment.set('userB_email', j.content.email);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{$randomFullName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"login\": \"{{$randomUserName}}\",\n  \"password\": \"{{$randomPassword}}\",\n  \"roles\": [\n    \"CUSTOMER\"\n  ],\n  \"addresses\": [\n    {\n      \"street\": \"{{$randomStreetName}}\",\n      \"number\": \"{{$randomInt}}\",\n      \"neighborhood\": \"Bela Vista\",\n      \"city\": \"{{$randomCity}}\",\n      \"state\": \"{{$randomCountryCode}}\",\n      \"zipCode\": \"01310-100\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users/{uuid} — User OWNER (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "",
+                  "const j = pm.response.json(); ",
+                  "pm.expect(j.content.uuid).to.eql(pm.environment.get('userA_uuid'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users/{uuid} — not found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/00000000-0000-0000-0000-000000000000"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users — list (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/users?name=&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users — invalid param (400) size=0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/users?size=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /v1/users/{uuid} — update OWNER (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "",
+                  "const j = pm.response.json();",
+                  "const req = JSON.parse(pm.request.body.raw);",
+                  "pm.expect(j.content.uuid).to.eql(pm.environment.get('userA_uuid'));",
+                  "pm.test('Name updated', () => pm.expect(j.content.fullName).to.eql(req.fullName));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{$randomFullName}}\",\n  \"addresses\": [\n    {\n      \"street\": \"{{$randomStreetName}}\",\n      \"number\": \"{{$randomInt}}\",\n      \"neighborhood\": \"Bela Vista\",\n      \"city\": \"{{$randomCity}}\",\n      \"state\": \"{{$randomCountryCode}}\",\n      \"zipCode\": \"01310-100\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /v1/users/{uuid} — invalid email (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400',()=>pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid@@mail\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /v1/users/{uuid} — email conflict (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409',()=>pm.response.to.have.status(409));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userB_email}}\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /v1/users/{uuid} — not found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nobody\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/00000000-0000-0000-0000-000000000000"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /v1/users/{uuid}/password — ok (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204',()=>pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.variables.set('userApassword', pm.environment.get('userA_password'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{userApassword}}\",\n  \"newPassword\": \"N0vaSenha@123\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}/password"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /v1/users/{uuid}/password — wrong current (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401',()=>pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"errada\",\n  \"newPassword\": \"N0vaSenha@123\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}/password"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /v1/users/{uuid}/password — not found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"123456\",\n  \"newPassword\": \"N0vaSenha@123\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/00000000-0000-0000-0000-000000000000/password"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /v1/users/{uuid} — delete OWNER (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204',()=>pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /v1/users/{uuid} — delete OWNER again (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404',()=>pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /v1/users/{uuid} — delete CUSTOMER (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204',()=>pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/{{userB_uuid}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1) Authentication",
+      "item": [
+        {
+          "name": "POST /v1/auth/login — ok (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.expect(j).to.have.property('success', true);",
+                  "pm.environment.set('accessToken', j.content.accessToken);",
+                  "pm.environment.set('tokenType', j.content.tokenType||'Bearer');",
+                  "pm.environment.set('expiresIn', j.content.expiresIn||3600);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"professor.fiap@qa.exemplo.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/auth/login"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /v1/auth/login — invalid (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401',()=>pm.response.to.have.status(401));",
+                  "const j=pm.response.json(); pm.expect(j).to.have.property('status',401);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"invalid@user.com\",\n  \"password\": \"wrong\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/auth/login"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2) Users",
+      "item": [
+        {
+          "name": "POST /v1/users — create User OWNER (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201',()=>pm.response.to.have.status(201));",
+                  "const j=pm.response.json();",
+                  "const req=JSON.parse(pm.request.body.raw);",
+                  "pm.environment.set('userA_uuid', j.content.uuid);",
+                  "pm.environment.set('userA_email', j.content.email);",
+                  "pm.environment.set('userA_password', req.password)",
+                  "pm.environment.set('userA_fullname', req.fullName)"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{$randomFullName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"login\": \"{{$randomUserName}}\",\n  \"password\": \"{{$randomPassword}}\",\n  \"roles\": [\n    \"OWNER\"\n  ],\n  \"addresses\": [\n    {\n      \"street\": \"{{$randomStreetName}}\",\n      \"number\": \"{{$randomInt}}\",\n      \"neighborhood\": \"Bela Vista\",\n      \"city\": \"{{$randomCity}}\",\n      \"state\": \"{{$randomCountryCode}}\",\n      \"zipCode\": \"01310-100\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /v1/users — invalid payload (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400',()=>pm.response.to.have.status(400));",
+                  "const j=pm.response.json(); pm.expect(j).to.have.property('status',400);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Lucas\",\n  \"email\": \"lucas@@example\",\n  \"login\": \"lucas.santos\",\n  \"password\": \"123\",\n  \"roles\": [\n    \"OWNER\"\n  ],\n  \"addresses\": [\n    {\n      \"street\": \"Av. Paulista\",\n      \"number\": \"1000\",\n      \"neighborhood\": \"Bela Vista\",\n      \"city\": \"São Paulo\",\n      \"state\": \"SP\",\n      \"zipCode\": \"01310-100\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /v1/users — duplicate email (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409',()=>pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Existing User\",\n  \"email\": \"{{userA_email}}\",\n  \"login\": \"existing.{{randomA}}\",\n  \"password\": \"Secr3t@123\",\n  \"roles\": [\n    \"CUSTOMER\"\n  ],\n  \"addresses\": [\n    {\n      \"street\": \"Rua X\",\n      \"number\": \"10\",\n      \"neighborhood\": \"Y\",\n      \"city\": \"Z\",\n      \"state\": \"SP\",\n      \"zipCode\": \"07700-000\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /v1/users — create User CUSTOMER (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201',()=>pm.response.to.have.status(201));",
+                  "const j=pm.response.json();",
+                  "pm.environment.set('userB_uuid', j.content.uuid);",
+                  "pm.environment.set('userB_email', j.content.email);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{$randomFullName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"login\": \"{{$randomUserName}}\",\n  \"password\": \"{{$randomPassword}}\",\n  \"roles\": [\n    \"CUSTOMER\"\n  ],\n  \"addresses\": [\n    {\n      \"street\": \"{{$randomStreetName}}\",\n      \"number\": \"{{$randomInt}}\",\n      \"neighborhood\": \"Bela Vista\",\n      \"city\": \"{{$randomCity}}\",\n      \"state\": \"{{$randomCountryCode}}\",\n      \"zipCode\": \"01310-100\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users/{uuid} — User OWNER (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "",
+                  "const j = pm.response.json(); ",
+                  "pm.expect(j.content.uuid).to.eql(pm.environment.get('userA_uuid'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users/{uuid} — not found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/00000000-0000-0000-0000-000000000000"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users — list (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/users?name=&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users — invalid param (400) size=0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/users?size=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /v1/users/{uuid} — update OWNER (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "",
+                  "const j = pm.response.json();",
+                  "const req = JSON.parse(pm.request.body.raw);",
+                  "pm.expect(j.content.uuid).to.eql(pm.environment.get('userA_uuid'));",
+                  "pm.test('Name updated', () => pm.expect(j.content.fullName).to.eql(req.fullName));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{$randomFullName}}\",\n  \"addresses\": [\n    {\n      \"street\": \"{{$randomStreetName}}\",\n      \"number\": \"{{$randomInt}}\",\n      \"neighborhood\": \"Bela Vista\",\n      \"city\": \"{{$randomCity}}\",\n      \"state\": \"{{$randomCountryCode}}\",\n      \"zipCode\": \"01310-100\",\n      \"country\": \"Brasil\",\n      \"isDefault\": true\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /v1/users/{uuid} — invalid email (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400',()=>pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid@@mail\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /v1/users/{uuid} — email conflict (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409',()=>pm.response.to.have.status(409));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userB_email}}\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /v1/users/{uuid} — not found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nobody\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/00000000-0000-0000-0000-000000000000"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /v1/users/{uuid} — delete OWNER (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204',()=>pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /v1/users/{uuid} — delete OWNER again (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404',()=>pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /v1/users/{uuid} — delete CUSTOMER (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204',()=>pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/users/{{userB_uuid}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3) Password",
+      "item": [
+        {
+          "name": "PATCH /v1/users/{uuid}/password — ok (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204',()=>pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.variables.set('userApassword', pm.environment.get('userA_password'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{userApassword}}\",\n  \"newPassword\": \"N0vaSenha@123\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}/password"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /v1/users/{uuid}/password — wrong current (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401',()=>pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"errada\",\n  \"newPassword\": \"N0vaSenha@123\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/{{userA_uuid}}/password"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /v1/users/{uuid}/password — not found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"123456\",\n  \"newPassword\": \"N0vaSenha@123\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/users/00000000-0000-0000-0000-000000000000/password"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
