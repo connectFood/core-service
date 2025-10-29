@@ -1,11 +1,10 @@
 {
   "info": {
-    "_postman_id": "85da5e0c-5fbb-4ba5-96c6-406e2aeefc09",
+    "_postman_id": "c5b8ebf7-e97b-435f-93a9-662f521d4644",
     "name": "ConnectFood - Collection (FIAP TC1)",
     "description": "Collection containing all endpoints available in swagger, for test execution and validations",
     "schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
-    "_exporter_id": "29067075",
-    "_collection_link": "https://argys-tech.postman.co/workspace/3d9105a2-e04d-4e18-ac7e-bae19d3ed0b1/collection/29067075-85da5e0c-5fbb-4ba5-96c6-406e2aeefc09?action=share&source=collection_link&creator=29067075"
+    "_exporter_id": "33985834"
   },
   "item": [
     {
@@ -336,6 +335,60 @@
                 {
                   "key": "name",
                   "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users — list by name (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200',()=>pm.response.to.have.status(200));",
+                  "",
+                  "const j=pm.response.json();",
+                  "",
+                  "pm.expect(j.totalElements).to.eql(1);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/users?name={{userA_fullName}}&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "{{userA_fullName}}"
                 },
                 {
                   "key": "page",
@@ -838,10 +891,11 @@
                   "pm.test('Status 201',()=>pm.response.to.have.status(201));",
                   "const j=pm.response.json();",
                   "const req=JSON.parse(pm.request.body.raw);",
+                  "",
                   "pm.environment.set('userA_uuid', j.content.uuid);",
                   "pm.environment.set('userA_email', j.content.email);",
                   "pm.environment.set('userA_password', req.password)",
-                  "pm.environment.set('userA_fullname', req.fullName)"
+                  "pm.environment.set('userA_fullName', req.fullName)"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -1074,6 +1128,60 @@
                 {
                   "key": "name",
                   "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /v1/users — list by name (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200',()=>pm.response.to.have.status(200));",
+                  "",
+                  "const j=pm.response.json();",
+                  "",
+                  "pm.expect(j.totalElements).to.eql(1);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/users?name={{userA_fullName}}&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "{{userA_fullName}}"
                 },
                 {
                   "key": "page",
