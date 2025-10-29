@@ -377,7 +377,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/v1/users?name={{userA_fullName}}&page=0&size=20",
+              "raw": "{{baseUrl}}/v1/users?name={{userA_fullname}}&page=0&size=20",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -388,7 +388,7 @@
               "query": [
                 {
                   "key": "name",
-                  "value": "{{userA_fullName}}"
+                  "value": "{{userA_fullname}}"
                 },
                 {
                   "key": "page",
@@ -895,7 +895,7 @@
                   "pm.environment.set('userA_uuid', j.content.uuid);",
                   "pm.environment.set('userA_email', j.content.email);",
                   "pm.environment.set('userA_password', req.password)",
-                  "pm.environment.set('userA_fullName', req.fullName)"
+                  "pm.environment.set('userA_fullname', req.fullName)"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -1170,7 +1170,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/v1/users?name={{userA_fullName}}&page=0&size=20",
+              "raw": "{{baseUrl}}/v1/users?name={{userA_fullname}}&page=0&size=20",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1181,7 +1181,7 @@
               "query": [
                 {
                   "key": "name",
-                  "value": "{{userA_fullName}}"
+                  "value": "{{userA_fullname}}"
                 },
                 {
                   "key": "page",
