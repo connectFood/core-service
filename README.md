@@ -1,223 +1,273 @@
-# ConnectFood - Core Service (FIAP Pós-Tech - Fase 1)
+# 🧩 ConnectFood - Core Service
 
-Documentação completa do serviço Core do sistema ConnectFood. Este módulo é responsável por usuários e autenticação (login/JWT), seguindo arquitetura hexagonal (ports & adapters), com contrato OpenAPI/Swagger e migrações versionadas com Flyway.
+**Core Service** é o módulo responsável por **usuários e autenticação** do sistema **ConnectFood**, desenvolvido como parte da Pós-Tech FIAP em Arquitetura e Desenvolvimento Java.  
+O serviço implementa **arquitetura hexagonal (ports & adapters)**, usa **Spring Boot 3.5.6**, **PostgreSQL**, **JWT**, **Flyway** e **OpenAPI/Swagger** para documentação e contrato.
 
+---
 
-## 🏷️ 1. Nome e Contexto do Projeto
-- Nome completo: ConnectFood - Core Service
-- Módulo: Core (usuários e autenticação)
-- Curso: FIAP Pós-Tech – Software Architecture (ADJ)
-- Fase: Tech Challenge 1 (Fase 1)
-- Autores: Lucas Santos Mumbarra
-- Objetivo do módulo: Gerenciar usuários (donos de restaurante e clientes), autenticação JWT e cadastro, com base em arquitetura hexagonal.
+## ⚙️ Stack e Tecnologias
 
+| Categoria | Tecnologias |
+|------------|--------------|
+| Linguagem | Java 21 |
+| Framework | Spring Boot 3.5.6 |
+| Banco de dados | PostgreSQL 16 |
+| Versionamento de schema | Flyway |
+| Segurança | Spring Security + JWT |
+| Documentação | SpringDoc OpenAPI 3.0.4 |
+| Build | Maven 3.9+ |
+| Containerização | Docker / Docker Compose |
 
-## 🧠 2. Descrição Geral
-O Core Service é um microserviço REST construído em Spring Boot 3.5.6, Java 21, PostgreSQL e Docker, utilizando Flyway para versionamento de schema e SpringDoc OpenAPI para documentação (Swagger). Ele é a base do ConnectFood e centraliza:
-- Cadastro, consulta, atualização, exclusão e alteração de senha de usuários;
-- Autenticação via JWT (login e emissão de bearer token);
-- Estrutura modular para expansão futura (ex.: pedidos, restaurantes);
-- Padrões de qualidade e boas práticas (camadas, DTOs, validação, RFC 7807).
+---
 
-Principais tecnologias e versões:
-- Spring Boot 3.5.6, Java 21
-- PostgreSQL 16, Flyway
-- Spring Data JPA, Spring Security
-- SpringDoc OpenAPI 3.0.4 (Swagger UI)
-- Docker e Docker Compose
+## 🧱 Arquitetura
 
-
-## ⚙️ 3. Arquitetura e Organização
-O projeto segue arquitetura hexagonal (ports & adapters), com clara separação de responsabilidades:
+O projeto segue **arquitetura hexagonal**, isolando regras de negócio da infraestrutura:
 
 ```
-Entrypoint (REST Controller)
+Entrypoint (REST Controllers)
     ↓
-Application (Use Cases)
+Application (Use Cases, Mappers)
     ↓
-Domain (Entities & Services)
+Domain (Entities, Ports, Services)
     ↓
-Infrastructure (Adapters, JPA, Configs)
+Infrastructure (JPA, Adapters, Configs, Security)
 ```
 
-- domain → regras de negócio puras (entities, services, ports);
-- application → orquestração de casos de uso e mapeamentos;
-- infrastructure → persistência (JPA), configurações, segurança, adapters;
-- entrypoint → controladores REST que implementam as interfaces geradas a partir do OpenAPI.
+**Benefícios:**
+- Baixo acoplamento e alta testabilidade
+- Facilita substituição de tecnologias
+- Domínio limpo e reutilizável
 
-Benefícios: baixo acoplamento, alta testabilidade e facilidade para trocar tecnologias sem impactar o domínio.
+---
 
+## 📂 Estrutura do Projeto
 
-## 📂 4. Estrutura de Pastas (resumo)
-Hierarquia resumida do módulo core-service:
+```
+src/
+ └── main/java/com/connectfood/core
+     ├── CoreServiceApplication.java
+     ├── application/
+     │    ├── mapper/
+     │    └── usecase/
+     │         ├── authentication/
+     │         └── users/
+     ├── domain/
+     │    ├── exception/
+     │    ├── factory/
+     │    ├── model/
+     │    ├── repository/
+     │    ├── service/
+     │    └── utils/
+     ├── entrypoint/
+     │    ├── rest/controller/
+     │    └── rest/handler/
+     └── infrastructure/
+          ├── config/
+          ├── persistence/
+          │    ├── adapter/
+          │    ├── entity/
+          │    ├── jpa/
+          │    ├── mapper/
+          │    └── specification/
+          └── security/
+```
 
-- src/main/java/com/connectfood/core
-  - CoreServiceApplication.java — classe principal Spring Boot
-  - application
-    - mapper — mapeamentos de DTOs do nível de aplicação
-    - usercase
-      - authentication — AuthenticationUseCase
-      - users — CreateUserUseCase, GetUserUseCase, ListUsersUseCase, UpdateUserUseCase, ChangedPasswordUseCase, DeleteUserUseCase
-  - domain
-    - exception — BadRequestException, ConflictException, NotFoundException, UnauthorizedException
-    - model — Users, Address, commons/BaseModel
-    - repository — ports (UsersRepository, AddressRepository)
-    - service — UsersService (porta) e adapter/UsersServiceImpl (impl de domínio)
-  - entrypoint
-    - rest/controller — UsersController, AuthenticationController
-    - rest/handler — tratamento global de erros (ProblemDetails)
-  - infrastructure
-    - config — configs de OpenAPI/SpringDoc e afins
-    - persistence — entities JPA, repositórios, adapters, mappers, specifications
-    - security — autenticação/JWT
-- src/main/resources
-  - application.yml — propriedades
-  - db/migration — migrações Flyway (V1__init_core_schema.sql, V2__insert_data.sql, V3__insert_teacher_user.sql)
-  - openapi/connectfood.yml — contrato OpenAPI (3.0.4)
-- docker-compose.yml, Dockerfile
-- pom.xml, mvnw, mvnw.cmd
-- src/test/java — testes (JUnit/Spring Boot)
+**Principais módulos:**
+- `domain` → entidades, regras de negócio e interfaces (ports)
+- `application` → casos de uso (use cases) e mapeamento entre camadas
+- `infrastructure` → JPA, configs, segurança e adapters
+- `entrypoint` → controladores REST (implementações OpenAPI)
 
+---
 
-## 🧮 5. Banco de Dados e Migrações
-- Banco: PostgreSQL 16
-- Versionamento: Flyway (executa automaticamente no startup)
-- Schema padrão: core (criado automaticamente se não existir)
+## 🗄️ Banco de Dados e Migrações
 
-Migrações principais:
-- V1__init_core_schema.sql: cria schema core e tabelas principais (users, address), índices e triggers de updated_at.
-- V2__insert_data.sql: popula 200 usuários demo (roles CUSTOMER/OWNER) e endereços.
-- V3__insert_teacher_user.sql: cria usuário “Professor FIAP” com senha 123456 e role OWNER, incluindo endereço comercial.
+**Banco:** PostgreSQL 16  
+**Versionamento:** Flyway (executado no startup)  
+**Schema:** `core`
 
-Tabelas principais:
-- core.users: id, uuid, full_name, email, login, password (hash), roles (jsonb), created_at, updated_at, version
-- core.address: id, uuid, user_id, street, number, complement, neighborhood, city, state, zip_code, country, address_type, is_default, created_at, updated_at, version
+### Tabelas principais
+| Tabela | Descrição |
+|--------|------------|
+| `core.users` | Usuários do sistema (clientes e donos de restaurante) |
+| `core.address` | Endereços vinculados aos usuários |
 
-Observações:
-- Restrições de unicidade em email, login e uuid.
-- Índices para pesquisas e GIN em roles.
+**Scripts:**
+- `V1__init_core_schema.sql` — Criação do schema e tabelas
+- `V2__insert_data.sql` — Usuários e endereços de exemplo
+- `V3__insert_teacher_user.sql` — Usuário “Professor FIAP” (role OWNER)
 
+---
 
-## 🐳 6. Execução via Docker Compose
-O projeto possui um docker-compose.yml que sobe PostgreSQL + API Core. Para executar:
+## 🐳 Execução com Docker Compose
 
+### Subir o ambiente
 ```bash
 docker compose up -d --build
 ```
 
-- O serviço db possui healthcheck e o core-service aguarda o DB ficar healthy.
-- A aplicação ficará disponível em: http://localhost:9090
+A API estará disponível em [http://localhost:9090](http://localhost:9090)
 
-Parar os serviços:
+### Parar o ambiente
 ```bash
 docker compose down
 ```
 
+**Serviços disponíveis:**
+- `db` → PostgreSQL com healthcheck
+- `core-service` → API Spring Boot aguardando DB estar `healthy`
 
-## 🌍 7. Variáveis de Ambiente
-Principais variáveis e valores padrão (ver application.yml):
+---
 
-| Variável | Descrição | Valor padrão |
-|-----------|------------|--------------|
-| SERVER_PORT | Porta da aplicação | 9090 |
-| SPRING_DATASOURCE_URL | URL do banco | jdbc:postgresql://db:5432/connectfood (compose) ou jdbc:postgresql://localhost:5432/connectfood |
-| SPRING_DATASOURCE_USERNAME | Usuário | connect (compose) ou root |
-| SPRING_DATASOURCE_PASSWORD | Senha | food (compose) ou root |
-| SPRING_JPA_DEFAULT_SCHEMA | Schema padrão | core |
-| SPRING_FLYWAY_ENABLED | Migrações automáticas | true |
-| SPRING_FLYWAY_DEFAULT_SCHEMA | Schema do Flyway | core |
-| SPRING_FLYWAY_SCHEMAS | Schemas migrados | core |
-| JWT_SECRET | Segredo do token JWT | nqoTpDYVygp3dUsX6CNdTnZgWSuBmWZUNOv/kM8y6go= |
-| JWT_EXPIRATION_SECONDS | Expiração do token (s) | 3600 |
+## 💻 Execução Local (sem Docker)
 
+**Pré-requisitos:**  
+Java 21, Maven 3.9+, PostgreSQL local (porta 5432)
 
-## 💻 8. Execução Local (sem Docker)
-Pré-requisitos: Java 21, Maven 3.9+, Docker (opcional para subir só o banco).
-
-1) Suba apenas o PostgreSQL (opcional via Docker):
+### 1️⃣ Subir banco (opcional via Docker)
 ```bash
 docker run --name connectfood-db -e POSTGRES_DB=connectfood -e POSTGRES_USER=connect -e POSTGRES_PASSWORD=food -p 5432:5432 -d postgres:16-alpine
 ```
 
-2) Exporte as variáveis (se necessário) e rode a aplicação:
+### 2️⃣ Rodar a aplicação
 ```bash
 mvn spring-boot:run
 ```
-- A aplicação iniciará em http://localhost:9090
-- O Flyway executará as migrações automaticamente no startup.
 
-3) Parar o banco (se subiu via Docker):
+Swagger UI → [http://localhost:9090/swagger-ui.html](http://localhost:9090/swagger-ui.html)
+
+### 3️⃣ Encerrar o banco (se rodando via Docker)
 ```bash
 docker rm -f connectfood-db
 ```
 
+---
 
-## 📘 9. Documentação da API (Swagger)
-A documentação é fornecida via SpringDoc OpenAPI.
-- Swagger UI → http://localhost:9090/swagger-ui.html
-- API Docs JSON → http://localhost:9090/v3/api-docs
+## 🌍 Variáveis de Ambiente
 
-Padrão de erros: ProblemDetails (RFC 7807) com content-type application/problem+json, incluindo campos type, title, status, detail, instance e errors[].
+| Variável | Descrição | Default |
+|-----------|------------|----------|
+| `SERVER_PORT` | Porta da aplicação | 9090 |
+| `SPRING_DATASOURCE_URL` | URL do banco | `jdbc:postgresql://db:5432/connectfood` |
+| `SPRING_DATASOURCE_USERNAME` | Usuário do banco | `connect` |
+| `SPRING_DATASOURCE_PASSWORD` | Senha do banco | `food` |
+| `JWT_SECRET` | Chave secreta JWT | `nqoTpDYVygp3dUsX6CNdTnZgWSuBmWZUNOv/kM8y6go=` |
+| `JWT_EXPIRATION_SECONDS` | Expiração do token (s) | 3600 |
 
-Status esperados por rota (exemplos principais):
-- POST /v1/users → 201, 400, 409
-- GET /v1/users → 200, 400
-- GET /v1/users/{uuid} → 200, 404
-- PUT /v1/users/{uuid} → 200, 400, 404, 409
-- PATCH /v1/users/{uuid}/password → 204, 401, 404
-- POST /v1/auth/login → 200, 401
+---
 
+## 📘 Documentação da API (Swagger)
 
-## 📬 10. Collection Postman
-Há uma collection com cenários baseados no Swagger para validação ponta a ponta:
-- Local: ver docs/postman
-- Collection: ConnectFood - Collection (FIAP TC1).postman_collection.json
-- Environment: ConnectFood - Environments.postman_environment.json
+- **Swagger UI:** [http://localhost:9090/swagger-ui.html](http://localhost:9090/swagger-ui.html)
+- **API Docs (JSON):** [http://localhost:9090/v3/api-docs](http://localhost:9090/v3/api-docs)
 
-Como usar:
-1. Importe ambos os arquivos no Postman.
-2. Selecione o ambiente “ConnectFood - Scenarios Local”.
-3. Execute a pasta “0) Run All Scenarios”.
-4. Todos os endpoints serão validados automaticamente (201, 400, 401, 404, 409 etc).
+**Endpoints principais:**
+| Método | Rota | Descrição |
+|---------|------|------------|
+| POST | `/v1/users` | Cria usuário |
+| GET | `/v1/users` | Lista usuários |
+| GET | `/v1/users/{uuid}` | Consulta usuário |
+| PUT | `/v1/users/{uuid}` | Atualiza dados |
+| PATCH | `/v1/users/{uuid}/password` | Altera senha |
+| DELETE | `/v1/users/{uuid}` | Remove usuário |
+| POST | `/v1/auth/login` | Autentica e gera token JWT |
 
-Dica: Incluímos um print do Runner com os resultados (ver docs/img/postman-runner.png).
+**Padrão de erro:** RFC 7807 — `application/problem+json`  
+Campos: `type`, `title`, `status`, `detail`, `instance`, `errors[]`
 
+---
 
-## 🧾 11. Critérios da Fase 1 (Checklist)
+## 📬 Postman Collection
 
-| Critério | Descrição | Status |
-|-----------|------------|--------|
-| CRUD de Usuários | Create, Read, Update, Delete | ✅ |
-| Autenticação JWT | Login e bearer token | ✅ |
-| Banco relacional | PostgreSQL + Flyway | ✅ |
-| Documentação Swagger | OpenAPI 3.0.4 | ✅ |
-| Testes via Postman | Todos os cenários (200–409) | ✅ |
-| Execução Docker | Compose funcional | ✅ |
-| Tratamento de Erros | RFC 7807 (ProblemDetails) | ✅ |
-| Arquitetura limpa | Hexagonal (ports & adapters) | ✅ |
+**Arquivos disponíveis em `docs/postman`:**
+- `ConnectFood - Collection (FIAP TC1).postman_collection.json`
+- `ConnectFood - Environments.postman_environment.json`
 
+**Como usar:**
+1. Importar ambos no Postman
+2. Selecionar o ambiente “ConnectFood - Scenarios Local”
+3. Executar a pasta `0) Run All Scenarios` para validar todos os endpoints
 
-## 🧪 12. Testes Automatizados (JUnit)
-Há testes JUnit prontos (ex.: CoreServiceApplicationTests). Para executar:
+---
+
+## 🩺 Healthcheck e Actuator
+
+**Endpoints disponíveis:**
+| Endpoint | Descrição |
+|-----------|------------|
+| `/actuator/health` | Status da aplicação |
+| `/actuator/info` | Informações básicas |
+
+**Exemplo:**
+```json
+{"status": "UP"}
+```
+
+**Docker Compose:** inclui healthcheck automático com base no `/actuator/health`.
+
+---
+
+## 🧪 Testes
+
+Executar testes com:
 ```bash
 mvn test
 ```
 
+Inclui testes básicos de inicialização do contexto Spring Boot.
 
-## 👨‍💻 13. Autor e Créditos
-```
-Autores: Lucas Santos Mumbarra
-Curso: FIAP Pós-Tech - Software Architecture (ADJ)
-Turma: 2025
-Fase: Tech Challenge 1
-Professor: [Nome do Professor]
-```
+---
 
+## 👥 Autores
 
-## 🧩 14. Referências e Links
-- Swagger UI: http://localhost:9090/swagger-ui.html
-- API Docs: http://localhost:9090/v3/api-docs
-- Postman Collection: ConnectFood-swagger-scenarios.postman_collection.json
-- Postman Environment: ConnectFood-swagger-scenarios-local.postman_environment.json
-- Relatório técnico (PDF): docs/Relatorio_TechChallenge_Fase1.pdf
-- Repositório GitHub: [link-do-repo]
+| Nome |
+|------|
+| Lucas Santos Mumbarra |
+| Suelen Peres |
+| Beatriz Ribeiro | 
+| Pilar Calderón | 
+| Caio Teles | 
+
+---
+
+## 🔗 Links úteis
+
+- Swagger UI → http://localhost:9090/swagger-ui.html
+- API Docs → http://localhost:9090/v3/api-docs
+- Postman Collection → `/docs/postman`
+- Banco (Docker) → `localhost:5432` (connect/food)
+
+---
+
+## ✅ Status do Projeto — Fase 1
+
+### 🔹 Requisitos Obrigatórios
+
+| Categoria | Requisito | Status |
+|------------|------------|--------|
+| **Funcionalidade** | CRUD completo de usuários (criar, listar, atualizar, excluir) | ✅ |
+|  | Endpoint separado para troca de senha | ✅ |
+|  | Endpoint distinto para atualização dos demais dados | ✅ |
+|  | Registro da data da última alteração | ✅ |
+|  | Busca de usuários por nome | ✅ |
+|  | Validação de login (login e senha válidos) | ✅ |
+|  | Garantia de e-mail único no cadastro | ✅ |
+|  | Dois tipos de usuários: **CLIENTE** e **OWNER (dono de restaurante)** | ✅ |
+| **Qualidade do Código** | Uso de boas práticas (Spring Boot, SOLID, OO, camadas claras) | ✅ |
+| **Documentação** | Endpoints documentados com Swagger/OpenAPI 3.0.4 | ✅ |
+|  | Exemplos de requisições e respostas (sucesso e erro) | ✅ |
+| **Banco de Dados** | Banco relacional (PostgreSQL) versionado com Flyway | ✅ |
+|  | Banco e app rodando via Docker Compose | ✅ |
+| **Coleções de Teste** | Postman Collection (.json) com cenários válidos e inválidos | ✅ |
+|  | Cobertura de: cadastro, erro, senha, atualização, busca, login | ✅ |
+| **Repositório** | Código, Swagger e Postman no GitHub público | ✅ |
+
+---
+
+### 🟦 Requisitos Opcionais (Desafio Extra)
+
+| Categoria | Requisito | Status |
+|------------|------------|--------|
+| **Segurança** | Implementar autenticação com Spring Security e JWT | ✅ (implementado) |
+| **Testes Automatizados** | Testes unitários com JUnit + Mockito | ✅ (básicos de contexto) |
