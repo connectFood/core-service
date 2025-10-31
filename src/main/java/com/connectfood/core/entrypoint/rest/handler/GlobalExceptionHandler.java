@@ -3,6 +3,7 @@ package com.connectfood.core.entrypoint.rest.handler;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.connectfood.core.domain.exception.BadRequestException;
 import com.connectfood.core.domain.exception.ConflictException;
 import com.connectfood.core.domain.exception.NotFoundException;
 import com.connectfood.core.domain.exception.UnauthorizedException;
@@ -32,6 +33,13 @@ public class GlobalExceptionHandler {
       final NotFoundException exception, final HttpServletRequest request) {
     return buildApiErrorResponse(
         exception.getMessage(), HttpStatus.NOT_FOUND, request.getRequestURI());
+  }
+
+  @ExceptionHandler(BadRequestException.class)
+  public ResponseEntity<ProblemDetails> handleBadRequestException(
+      final BadRequestException exception, final HttpServletRequest request) {
+    return buildApiErrorResponse(
+        exception.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
   }
 
   @ExceptionHandler(ConflictException.class)
@@ -83,12 +91,12 @@ public class GlobalExceptionHandler {
         "Invalid input data", HttpStatus.BAD_REQUEST, request.getRequestURI(), errors);
   }
 
-//  @ExceptionHandler(Exception.class)
-//  public ResponseEntity<ProblemDetails> handleGeneric(
-//      final Exception exception, final HttpServletRequest request) {
-//    return buildApiErrorResponse(
-//        "Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
-//  }
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ProblemDetails> handleGeneric(
+      final Exception exception, final HttpServletRequest request) {
+    return buildApiErrorResponse(
+        "Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+  }
 
   private ResponseEntity<ProblemDetails> buildApiErrorResponse(
       final String message, final HttpStatus status, final String path) {

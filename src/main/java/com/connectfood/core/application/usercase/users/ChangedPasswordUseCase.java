@@ -23,7 +23,7 @@ public class ChangedPasswordUseCase {
     final var validPassword = PasswordUtils.matches(request.getCurrentPassword(), user.getPassword());
 
     if (!validPassword) {
-      throw new UnauthorizedException("Invalid password");
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     final var password = PasswordUtils.encode(request.getNewPassword());
